@@ -1,6 +1,6 @@
 {
  "edition": "0.1",
- "generated_utc": "2026-10-24T09:24:20Z",
+ "generated_utc": "2026-10-24T09:39:18Z",
  "areas": [
   "Spans",
   "Documents",
@@ -127,5 +127,62 @@
    "source_url": "https://ningding97.github.io/fewnerd/"
   }
  ],
- "entries": []
+ "entries": [
+  {
+   "id": "cloudflare-clairic-preview",
+   "name": "Clairic (preview)",
+   "org": "Cloudflare",
+   "kind": "api",
+   "system": "one",
+   "index": 69.49,
+   "areas": {
+    "Spans": 61.21,
+    "Documents": 83.91,
+    "Numbers": 78.0,
+    "Entities": 40.2
+   },
+   "tests": {
+    "squad2": 92.15,
+    "cuad": 30.28,
+    "cord": 73.59,
+    "docs": 94.23,
+    "drop": 85.11,
+    "tatqa": 70.9,
+    "fewnerd": 40.2
+   },
+   "types": {
+    "text": 90.73,
+    "number": 78.01,
+    "date": 89.92,
+    "time": 100.0,
+    "datetime": 89.44,
+    "duration": 85.83,
+    "list": 44.47
+   },
+   "null": {
+    "precision": 95.7,
+    "recall": 63.37
+   },
+   "latency_ms": {
+    "median": 238.7,
+    "mean": 256.0,
+    "p80": 303.8
+   },
+   "rows": {
+    "total": 1997,
+    "ok": 1997,
+    "unsupported": 0,
+    "error": 0,
+    "missing": 0
+   },
+   "hardware": "Cloudflare Workers AI",
+   "links": {
+    "model": "https://developers.cloudflare.com/workers-ai/models/clairic/",
+    "results": "https://huggingface.co/datasets/balys/extract-index-run-clairic-preview",
+    "submission": "https://github.com/balys/extract-index/blob/main/submissions/README.md"
+   },
+   "date": "2026-10-24",
+   "notes": "Run by the maintainers through the Workers AI REST API with default options, one request at a time from Europe, so latency includes the network round trip. Answers are scored as returned; list answers are not filtered by their confidence."
+  }
+ ]
 }

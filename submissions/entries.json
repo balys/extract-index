@@ -1,1 +1,17 @@
-[]
+[
+ {
+  "name": "Clairic (preview)",
+  "org": "Cloudflare",
+  "kind": "api",
+  "system": "one",
+  "scores": "https://huggingface.co/datasets/balys/extract-index-run-clairic-preview/resolve/main/scores.json",
+  "hardware": "Cloudflare Workers AI",
+  "links": {
+   "model": "https://developers.cloudflare.com/workers-ai/models/clairic/",
+   "results": "https://huggingface.co/datasets/balys/extract-index-run-clairic-preview",
+   "submission": "https://github.com/balys/extract-index/blob/main/submissions/README.md"
+  },
+  "date": "2026-10-24",
+  "notes": "Run by the maintainers through the Workers AI REST API with default options, one request at a time from Europe, so latency includes the network round trip. Answers are scored as returned; list answers are not filtered by their confidence."
+ }
+]

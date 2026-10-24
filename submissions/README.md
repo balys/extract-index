@@ -6,6 +6,7 @@ typed in by hand.
 
 | Model | Weights or API | Results | Engine and commit | Hardware | Options | Declared limits |
 |---|---|---|---|---|---|---|
+| Clairic (preview), Cloudflare | API, `@cf/cloudflare/clairic` | [balys/extract-index-run-clairic-preview](https://huggingface.co/datasets/balys/extract-index-run-clairic-preview) | `clairic` at `151f52a` | Cloudflare Workers AI (REST API, called from Europe) | none (defaults) | 65,536-token context, 8,192-token passes |
 
 ## How to submit
 
