@@ -1,6 +1,6 @@
 {
  "edition": "0.1",
- "generated_utc": "2026-10-24T09:39:18Z",
+ "generated_utc": "2026-10-24T09:52:34Z",
  "areas": [
   "Spans",
   "Documents",
@@ -175,6 +175,7 @@
     "error": 0,
     "missing": 0
    },
+   "avatar": "assets/orgs/cloudflare.webp",
    "hardware": "Cloudflare Workers AI",
    "links": {
     "model": "https://developers.cloudflare.com/workers-ai/models/clairic/",
@@ -183,6 +184,60 @@
    },
    "date": "2026-10-24",
    "notes": "Run by the maintainers through the Workers AI REST API with default options, one request at a time from Europe, so latency includes the network round trip. Answers are scored as returned; list answers are not filtered by their confidence."
+  },
+  {
+   "id": "extract-index-null-baseline",
+   "name": "Null baseline",
+   "org": "Extract Index",
+   "kind": "open",
+   "system": "baseline",
+   "index": 27.71,
+   "areas": {
+    "Spans": 47.78,
+    "Documents": 27.61,
+    "Numbers": 0.0,
+    "Entities": 43.18
+   },
+   "tests": {
+    "squad2": 50.5,
+    "cuad": 45.06,
+    "cord": 33.1,
+    "docs": 22.11,
+    "drop": 0.0,
+    "tatqa": 0.0,
+    "fewnerd": 43.18
+   },
+   "types": {
+    "text": 37.17,
+    "number": 15.98,
+    "date": 21.49,
+    "time": 10.68,
+    "datetime": 8.07,
+    "duration": 5.12,
+    "list": 33.62
+   },
+   "null": {
+    "precision": 29.15,
+    "recall": 100.0
+   },
+   "latency_ms": {
+    "median": 0.0,
+    "mean": 0.0,
+    "p80": 0.0
+   },
+   "rows": {
+    "total": 1997,
+    "ok": 1997,
+    "unsupported": 0,
+    "error": 0,
+    "missing": 0
+   },
+   "hardware": "any",
+   "links": {
+    "model": "https://github.com/balys/extract-index/blob/main/extract_index/engines/null.py"
+   },
+   "date": "2026-10-24",
+   "notes": "Answers null for every field. This is the floor: each test scores its share of fields whose gold is null."
   }
  ]
 }

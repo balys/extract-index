@@ -18,7 +18,7 @@ from . import EDITION
 from .suite.common import sha256_file
 
 KINDS = ("open", "api")
-SYSTEMS = ("one", "two")
+SYSTEMS = ("one", "two", "baseline")  # ranked, reference (generating), floor (e.g. null)
 REQUIRED = ("name", "org", "kind", "system", "scores")
 
 
@@ -77,7 +77,7 @@ def board_entry(entry: dict, scores: dict) -> dict:
         "latency_ms": scores.get("latency_ms", {}),
         "rows": {k: v for k, v in (scores.get("rows") or {}).items() if k != "ignored"},
     })
-    for k in ("hardware", "links", "date", "notes"):
+    for k in ("avatar", "hardware", "links", "date", "notes"):
         if k in entry:
             out[k] = entry[k]
     return out
@@ -99,7 +99,7 @@ def _check_entry(i: int, entry: Any) -> str:
 
 def _sort_key(e: dict) -> tuple:
     index = e.get("index")
-    return (e["system"] != "one", index is None, -(index or 0.0), e["name"])
+    return (SYSTEMS.index(e["system"]), index is None, -(index or 0.0), e["name"])
 
 
 def build_board(entries_path: str | Path, manifest_path: str | Path) -> dict:

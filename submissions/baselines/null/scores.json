@@ -1,0 +1,110 @@
+{
+  "edition": "0.1",
+  "kit_version": "0.1.0",
+  "suite_sha256": "6d2416a759238767c638178d7e0eb981441b4f3262e761630c274c9444fa4d13",
+  "engine": "null",
+  "complete": true,
+  "rows": {
+    "total": 1997,
+    "ok": 1997,
+    "unsupported": 0,
+    "error": 0,
+    "missing": 0,
+    "ignored": 0
+  },
+  "index": 27.71,
+  "areas": {
+    "Spans": 47.78,
+    "Documents": 27.61,
+    "Numbers": 0.0,
+    "Entities": 43.18
+  },
+  "tests": {
+    "squad2": {
+      "score": 50.5,
+      "requests": 300,
+      "fields": 2909,
+      "ok": 300,
+      "unsupported": 0,
+      "error": 0,
+      "missing": 0
+    },
+    "cuad": {
+      "score": 45.06,
+      "requests": 250,
+      "fields": 992,
+      "ok": 250,
+      "unsupported": 0,
+      "error": 0,
+      "missing": 0
+    },
+    "cord": {
+      "score": 33.1,
+      "requests": 197,
+      "fields": 1166,
+      "ok": 197,
+      "unsupported": 0,
+      "error": 0,
+      "missing": 0
+    },
+    "docs": {
+      "score": 22.11,
+      "requests": 400,
+      "fields": 2813,
+      "ok": 400,
+      "unsupported": 0,
+      "error": 0,
+      "missing": 0
+    },
+    "drop": {
+      "score": 0.0,
+      "requests": 300,
+      "fields": 1380,
+      "ok": 300,
+      "unsupported": 0,
+      "error": 0,
+      "missing": 0
+    },
+    "tatqa": {
+      "score": 0.0,
+      "requests": 250,
+      "fields": 1500,
+      "ok": 250,
+      "unsupported": 0,
+      "error": 0,
+      "missing": 0
+    },
+    "fewnerd": {
+      "score": 43.18,
+      "requests": 300,
+      "fields": 1517,
+      "ok": 300,
+      "unsupported": 0,
+      "error": 0,
+      "missing": 0
+    }
+  },
+  "types": {
+    "text": 37.17,
+    "number": 15.98,
+    "date": 21.49,
+    "time": 10.68,
+    "datetime": 8.07,
+    "duration": 5.12,
+    "list": 33.62
+  },
+  "null": {
+    "precision": 29.15,
+    "recall": 100.0,
+    "f1": 45.14,
+    "brier": 0.7085,
+    "p_null_coverage": 1.0
+  },
+  "latency_ms": {
+    "median": 0.0,
+    "mean": 0.0,
+    "p80": 0.0
+  },
+  "usage": {},
+  "generated_utc": "2026-10-24T09:52:07Z"
+}

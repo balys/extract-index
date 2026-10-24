@@ -12,6 +12,20 @@
    "submission": "https://github.com/balys/extract-index/blob/main/submissions/README.md"
   },
   "date": "2026-10-24",
-  "notes": "Run by the maintainers through the Workers AI REST API with default options, one request at a time from Europe, so latency includes the network round trip. Answers are scored as returned; list answers are not filtered by their confidence."
+  "notes": "Run by the maintainers through the Workers AI REST API with default options, one request at a time from Europe, so latency includes the network round trip. Answers are scored as returned; list answers are not filtered by their confidence.",
+  "avatar": "assets/orgs/cloudflare.webp"
+ },
+ {
+  "name": "Null baseline",
+  "org": "Extract Index",
+  "kind": "open",
+  "system": "baseline",
+  "scores": "baselines/null/scores.json",
+  "hardware": "any",
+  "links": {
+   "model": "https://github.com/balys/extract-index/blob/main/extract_index/engines/null.py"
+  },
+  "date": "2026-10-24",
+  "notes": "Answers null for every field. This is the floor: each test scores its share of fields whose gold is null."
  }
 ]

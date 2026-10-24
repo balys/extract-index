@@ -129,3 +129,12 @@ def test_board_refuses_duplicate_ids_and_partial_suites(setup):
     (suite / "manifest.json").write_text(json.dumps(dict(manifest, partial=True)))
     with pytest.raises(BoardError, match="partial"):
         build_board(write_entries(subs, []), suite / "manifest.json")
+
+
+def test_board_keeps_avatars_and_puts_baselines_last(setup):
+    suite, subs, _ = setup
+    entries = [entry(name="Floor", system="baseline"), entry(name="Ref", system="two", kind="api"),
+               entry(name="Null", avatar="assets/orgs/turion-ai.webp")]
+    board = build_board(write_entries(subs, entries), suite / "manifest.json")
+    assert [(e["name"], e["system"]) for e in board["entries"]] == [("Null", "one"), ("Ref", "two"), ("Floor", "baseline")]
+    assert board["entries"][0]["avatar"] == "assets/orgs/turion-ai.webp" and "avatar" not in board["entries"][1]

@@ -31,7 +31,9 @@ typed in by hand.
       "date": "YYYY-MM-DD", "notes": "..."}
      ```
      `kind` is `open` (weights public) or `api`; `system` is `one` (one pass, no generated tokens;
-     ranked) or `two` (a generating model; shown as a reference row, not ranked).
+     ranked) or `two` (a generating model; shown as a reference row, not ranked). `avatar` is
+     optional: a square image in `space/assets/orgs/` (your Hub organisation's avatar works).
+     The maintainers' `baseline` rows (the `null` floor) are not ranked either.
 5. The maintainers rebuild the board with
    `python -m extract_index board --entries submissions/entries.json --manifest suite-0.1/manifest.json --out space/data/board.json`,
    which refuses entries whose `suite_sha256` differs from the suite manifest or whose run is
