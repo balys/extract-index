@@ -516,7 +516,7 @@
     var n = e.null || {}, l = e.latency_ms || {}, links = e.links || {};
     var linkItems = [['model', 'Model'], ['results', 'Results'], ['submission', 'Submission']].map(function (p) {
       var u = safeUrl(links[p[0]]);
-      return u ? '<a href="' + esc(u) + '" rel="noopener">' + p[1] + '</a>' : '';
+      return u ? '<a href="' + esc(u) + '" target="_blank" rel="noopener">' + p[1] + '</a>' : '';
     }).filter(Boolean).join('');
     var latency = isNum(l.median) || isNum(l.mean) || isNum(l.p80)
       ? fmtMs(l.median) + ' / ' + fmtMs(l.mean) + ' / ' + fmtMs(l.p80) + ' ms'
@@ -743,7 +743,7 @@
       '<div><dt>Metric</dt><dd>' + esc(t.metric || '—') + '</dd></div>' +
       '<div class="wide"><dt>Field types</dt><dd>' + (types || '—') + '</dd></div>' +
       '<div><dt>Licence</dt><dd>' + esc(t.license || '—') + '</dd></div>' +
-      '<div><dt>Source</dt><dd>' + (src ? '<a href="' + esc(src) + '" rel="noopener">' + esc(hostOf(src)) + '</a>' : '—') + '</dd></div>' +
+      '<div><dt>Source</dt><dd>' + (src ? '<a href="' + esc(src) + '" target="_blank" rel="noopener">' + esc(hostOf(src)) + '</a>' : '—') + '</dd></div>' +
       '</dl></article>';
   }
 
