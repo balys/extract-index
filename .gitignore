@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+.venv/
+suite-0.1/
+runs/
+*.egg-info/
+.pytest_cache/
+.cache/
+
+# internal notes, kept locally, not published
+/SPEC.md
+/HANDOFF.md
+/notes/

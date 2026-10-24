@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "extract-index"
+version = "0.1.0"
+description = "SystemOne Extract Index: a public benchmark for one-pass typed extraction models"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+dependencies = ["httpx>=0.27"]
+
+[project.optional-dependencies]
+build = ["datasets>=3.0", "pyarrow", "huggingface_hub>=0.30"]
+hub = ["huggingface_hub>=0.30"]
+test = ["pytest"]
+
+[tool.setuptools.packages.find]
+include = ["extract_index*"]
