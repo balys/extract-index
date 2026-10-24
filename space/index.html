@@ -6,15 +6,19 @@
 <title>SystemOne Extract Index</title>
 <meta name="description" content="Leaderboard for one-pass typed extraction models: a model reads a document and a map of typed fields and returns a typed value or null per field, in one forward pass with no generated tokens.">
 <meta name="color-scheme" content="light">
-<meta name="theme-color" content="#E9E6DD">
+<meta name="theme-color" content="#F2F0EA">
 <meta property="og:type" content="website">
 <meta property="og:title" content="SystemOne Extract Index">
 <meta property="og:description" content="Leaderboard for one-pass typed extraction models, scored on a frozen public suite.">
 <meta property="og:url" content="https://huggingface.co/spaces/balys/extract-index">
+<meta property="og:image" content="https://huggingface.co/spaces/balys/extract-index/resolve/main/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Chewy&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Shantell+Sans:ital,wght@0,400;0,700;1,400&family=Courier+Prime:wght@400;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
@@ -22,97 +26,27 @@
 
 <main class="wrap" id="top">
 
-  <header class="hero">
-    <div class="hero-row">
-      <svg class="mascot" viewBox="0 0 250 224" role="img" aria-labelledby="mascot-title">
-        <title id="mascot-title">A round yellow face reads a document through a magnifying glass; typed chips (text, number, date, null) pop out of the page.</title>
-        <g stroke="#232323" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
-          <!-- document -->
-          <g transform="rotate(7 176 134)">
-            <rect x="138" y="82" width="78" height="104" rx="8" fill="#FFFFFF"/>
-            <path d="M152 104h42M152 118h50M152 132h36M152 146h48M152 160h30" stroke="#C9C3B6" stroke-width="4"/>
-          </g>
-          <!-- motion lines from the page -->
-          <path d="M150 70l-6-9M172 58l-2-11M196 62l5-9" stroke-width="3"/>
-          <!-- typed chips -->
-          <g font-family="'IBM Plex Mono', ui-monospace, monospace" font-size="12.5" font-weight="500" stroke-width="3">
-            <g transform="rotate(-9 134 46)">
-              <rect x="112" y="34" width="44" height="23" rx="11.5" fill="#DCE7FB"/>
-              <text x="134" y="50" text-anchor="middle" stroke="none" fill="#232323">text</text>
-            </g>
-            <g transform="rotate(5 196 26)">
-              <rect x="164" y="14" width="64" height="23" rx="11.5" fill="#EBDAFB"/>
-              <text x="196" y="30" text-anchor="middle" stroke="none" fill="#232323">number</text>
-            </g>
-            <g transform="rotate(-4 220 60)">
-              <rect x="198" y="48" width="46" height="23" rx="11.5" fill="#D6EBDD"/>
-              <text x="221" y="64" text-anchor="middle" stroke="none" fill="#232323">date</text>
-            </g>
-            <g transform="rotate(8 226 96)">
-              <rect x="206" y="84" width="40" height="23" rx="11.5" fill="#FFFFFF" stroke-dasharray="5 3"/>
-              <text x="226" y="100" text-anchor="middle" stroke="none" fill="#232323">null</text>
-            </g>
-          </g>
-          <!-- face -->
-          <circle cx="72" cy="128" r="58" fill="#FFD21E"/>
-          <ellipse cx="38" cy="138" rx="9" ry="5.5" fill="#FFB1A3" stroke="none"/>
-          <ellipse cx="104" cy="136" rx="9" ry="5.5" fill="#FFB1A3" stroke="none"/>
-          <g stroke="none" fill="#232323">
-            <ellipse cx="56" cy="118" rx="6.5" ry="7.5"/>
-            <ellipse cx="90" cy="116" rx="6.5" ry="7.5"/>
-          </g>
-          <g stroke="none" fill="#FFFFFF">
-            <circle cx="58.5" cy="115.5" r="2.2"/>
-            <circle cx="92.5" cy="113.5" r="2.2"/>
-          </g>
-          <path d="M52 142Q73 170 94 142Z" fill="#232323"/>
-          <path d="M62 152Q73 162 84 152Q73 148 62 152Z" fill="#F26B6B" stroke="none"/>
-          <!-- arm and magnifying glass -->
-          <path d="M118 148L146 122" stroke-width="13"/>
-          <path d="M118 148L146 122" stroke="#FFD21E" stroke-width="6"/>
-          <circle cx="147" cy="121" r="8" fill="#FFD21E"/>
-          <path d="M150 118L164 104" stroke-width="13"/>
-          <path d="M150 118L164 104" stroke="#FF9D00" stroke-width="6"/>
-          <circle cx="181" cy="88" r="26" fill="#DCE7FB" fill-opacity="0.8" stroke-width="6"/>
-          <path d="M168 82h30M168 94h22" stroke="#9A948A" stroke-width="5"/>
-          <path d="M166 76a18 18 0 0 1 12-9" stroke="#FFFFFF" stroke-width="4"/>
-          <!-- one pass: a bolt -->
-          <path d="M46 24L26 56H40L32 82L56 46H42Z" fill="#FF9D00" stroke-width="3.5"/>
-        </g>
-      </svg>
-      <h1><span class="l1">SystemOne Extract</span> <mark>Index <span data-edition>0.1</span></mark></h1>
-      <div class="wn">
-        <button type="button" id="news-toggle" aria-expanded="false" aria-controls="news">
-          <svg viewBox="0 0 100 100" aria-hidden="true"><polygon points="50,2 58,13 71,7 73,21 87,20 83,33 96,39 86,50 96,61 83,67 87,80 73,79 71,93 58,87 50,98 42,87 29,93 27,79 13,80 17,67 4,61 14,50 4,39 17,33 13,20 27,21 29,7 42,13" fill="#EF3E36" stroke="#232323" stroke-width="2.5" stroke-linejoin="round"/></svg>
-          <span><i>what's</i><i>new?</i></span>
-        </button>
-      </div>
+  <header class="hero sheet">
+    <div class="hero-head">
+      <span>extract-index / board</span>
+      <p class="meta" data-meta>edition 0.1</p>
     </div>
-    <p class="lede">A benchmark for one-pass extraction models. The model reads a document (<code>state</code>) and a map of typed fields, and returns a typed value or <code>null</code> for each field in one forward pass, with no generated tokens. The suite is frozen and public, the scorer is deterministic, and every listed run publishes its results.</p>
-    <p class="meta" data-meta>edition 0.1</p>
-    <section class="card news" id="news" hidden aria-labelledby="h-news">
-      <svg class="cloud" viewBox="0 0 200 172" role="img" aria-labelledby="cloud-title">
-        <title id="cloud-title">A small orange cloud reads a receipt.</title>
-        <g stroke="#232323" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" fill="#F38020">
-          <circle cx="58" cy="90" r="30"/><circle cx="98" cy="64" r="40"/><circle cx="142" cy="88" r="30"/>
-          <rect x="36" y="88" width="128" height="40" rx="20"/>
-        </g>
-        <g fill="#F38020">
-          <circle cx="58" cy="90" r="27"/><circle cx="98" cy="64" r="37"/><circle cx="142" cy="88" r="27"/>
-          <rect x="39" y="91" width="122" height="34" rx="17"/>
-        </g>
-        <ellipse cx="100" cy="108" rx="40" ry="13" fill="#F9A65C"/>
-        <ellipse cx="70" cy="86" rx="7" ry="4" fill="#FFC9A6"/><ellipse cx="130" cy="86" rx="7" ry="4" fill="#FFC9A6"/>
-        <g fill="#232323"><circle cx="84" cy="76" r="5"/><circle cx="116" cy="76" r="5"/></g>
-        <g fill="#FFFFFF"><circle cx="86" cy="74" r="1.8"/><circle cx="118" cy="74" r="1.8"/></g>
-        <path d="M92 90q8 7 16 0" fill="none" stroke="#232323" stroke-width="3.5" stroke-linecap="round"/>
-        <g stroke="#232323" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round">
-          <path d="M78 100h44v56l-5.5 6-5.5-6-5.5 6-5.5-6-5.5 6-5.5-6-5.5 6-5.5-6Z" fill="#FFFFFF"/>
-          <path d="M86 112h28M86 122h20M86 132h26M86 142h16" stroke="#C9C3B6"/>
-          <path d="M86 150h28" stroke="#232323"/>
-          <circle cx="79" cy="124" r="8" fill="#F38020"/><circle cx="121" cy="124" r="8" fill="#F38020"/>
-        </g>
-      </svg>
+    <button type="button" class="note-btn" id="news-toggle" aria-expanded="false" aria-controls="news"><span>what's</span><span>new?</span></button>
+    <div class="hero-body">
+      <div class="hero-copy">
+        <h1><span class="l1">SystemOne</span> <span class="l2"><span class="hl">Extract<span class="span-note" aria-hidden="true">span [10, 17]</span></span> Index<span class="ed" data-edition>0.1</span></span></h1>
+        <p class="lede">A benchmark for one-pass extraction models. The model reads a document (<code>state</code>) and a map of typed fields, and returns a typed value or <code>null</code> for each field in one forward pass, with no generated tokens. The suite is frozen and public, the scorer is deterministic, and every listed run publishes its results.</p>
+      </div>
+      <figure class="hero-fig">
+        <img class="hero-art" src="assets/art/hero.webp" width="440" height="330" alt="A round yellow character with rosy cheeks sweeps a highlighter across a document while small coloured tags float off the page." fetchpriority="high">
+        <span class="tag fly fly-date" aria-hidden="true">date</span>
+        <span class="tag fly fly-text" aria-hidden="true">text</span>
+        <span class="tag fly fly-number" aria-hidden="true">number</span>
+        <span class="tag fly fly-null" aria-hidden="true">null</span>
+      </figure>
+    </div>
+    <section class="receipt news" id="news" hidden aria-labelledby="h-news">
+      <img src="assets/art/clairic.webp" width="150" height="150" alt="A fluffy orange cloud character reads a long receipt, holding a highlighter.">
       <div>
         <h2 id="h-news">What's new</h2>
         <p class="when"><span data-edition>0.1</span>, <span data-generated>2026-10-24</span></p>
@@ -121,17 +55,19 @@
     </section>
   </header>
 
-  <nav class="subnav" aria-label="Page sections">
-    <a href="#board">Ranking</a>
-    <a href="#full-table">Full table</a>
-    <a href="#how">How it works</a>
-    <a href="#tests">Tests</a>
-    <a href="#scoring">Scoring</a>
-    <a href="#rules">Rules</a>
-    <a href="#submit">Submit</a>
+  <nav class="tabs" aria-label="Page sections">
+    <ul>
+      <li><a href="#board"><span>Ranking</span></a></li>
+      <li><a href="#full-table"><span>Full table</span></a></li>
+      <li><a href="#how"><span>How it works</span></a></li>
+      <li><a href="#tests"><span>Tests</span></a></li>
+      <li><a href="#scoring"><span>Scoring</span></a></li>
+      <li><a href="#rules"><span>Rules</span></a></li>
+      <li><a href="#submit"><span>Submit</span></a></li>
+    </ul>
   </nav>
 
-  <section class="panel" id="board" aria-labelledby="h-board">
+  <section class="panel sheet" id="board" aria-labelledby="h-board">
     <h2 id="h-board" class="sr-only">Leaderboard</h2>
     <div class="toolbar">
       <div class="legend" data-legend aria-hidden="true"></div>
@@ -140,24 +76,24 @@
     <div id="ranking" class="ranking" aria-live="polite" aria-busy="true">
       <p class="loading">Loading <code>data/board.json</code></p>
     </div>
-    <p class="fignote" data-ranking-note>The Index is the mean of the <span data-test-count>7</span> test scores, 0 to 100. Hover or tap a bar for its parts; click it to open the row in the table. System Two rows (generating models) are reference points and are not ranked. <a href="#how">How it works</a></p>
+    <p class="fig-note" data-ranking-note>The Index is the mean of the <span data-test-count>7</span> test scores, 0 to 100. Point at a line, or tap it, for its parts; click it to open the row in the table. System Two rows (generating models) are reference points and are not ranked. <a href="#how">How it works</a></p>
 
     <div class="charts">
       <figure class="fig" id="by-area">
         <figcaption>By area</figcaption>
         <div class="fig-body" data-area-chart></div>
-        <p class="fignote">Each area is the mean of its tests. The dashed tick is the null floor for that area.</p>
+        <p class="fig-note">Each area is the mean of its tests. The dashed tick is the null floor for that area.</p>
       </figure>
-      <div class="charts2">
+      <div class="charts-pair">
         <figure class="fig" id="field-types">
           <figcaption>Field types</figcaption>
           <div class="fig-body" data-types-chart></div>
-          <p class="fignote">Micro score over every field of that type in the suite. One dot per run; the dashed tick is the null floor.</p>
+          <p class="fig-note">Micro score over every field of that type in the suite. One mark per run; the dashed tick is the null floor.</p>
         </figure>
         <figure class="fig" id="latency">
           <figcaption>Median latency vs Index</figcaption>
           <div class="fig-body" data-latency-chart></div>
-          <p class="fignote" data-latency-note>Wall time per request, one request at a time; hosted APIs include the network round trip. Up and left is the corner you want.</p>
+          <p class="fig-note" data-latency-note>Wall time per request, one request at a time; hosted APIs include the network round trip. Up and left is the corner you want.</p>
         </figure>
       </div>
     </div>
@@ -167,15 +103,18 @@
       <p data-board-meta></p>
     </div>
     <div id="table" class="table"></div>
-    <p class="fignote">Area columns are means of their tests. Latency is the median wall time per request. Open a row for per-test and per-type scores, null calibration, hardware and links.</p>
+    <p class="fig-note">Area columns are means of their tests. Latency is the median wall time per request. Open a row for per-test and per-type scores, null calibration, hardware and links.</p>
   </section>
 
   <section class="section" id="how" aria-labelledby="h-how">
-    <div class="section-head">
-      <h2 id="h-how">How it works</h2>
-      <p>One request per document, one forward pass, one score per field. The engine under test does the first three steps; the kit does the rest, deterministically.</p>
+    <div class="how-top">
+      <div class="section-head">
+        <h2 id="h-how">How it works</h2>
+        <p>One request per document, one forward pass, one score per field. The engine under test does the first three steps; the kit does the rest, deterministically.</p>
+      </div>
+      <img class="how-art" src="assets/art/one-pass.webp" width="640" height="360" alt="The yellow character zooms past a long page in one go, leaving a single continuous highlighter stroke behind it, with a small lightning bolt: one pass, no generated tokens.">
     </div>
-    <ol class="flow">
+    <ol class="flow sheet">
       <li class="step engine"><b>1 · Request</b><span class="wt">from the suite</span><p><code>state</code> (the document) and <code>fields</code>: a map of name to type, with optional instructions, unit and decimals.</p></li>
       <li class="step engine"><b>2 · One pass</b><span class="wt">model under test</span><p>One forward pass over state and fields. No decoding, no generated tokens, no thinking out loud.</p></li>
       <li class="step engine"><b>3 · Typed answers</b><span class="wt">model under test</span><p>One typed value or <code>null</code> per field. Optional <code>p_null</code>, <code>confidence</code> and <code>span</code>.</p></li>
@@ -183,7 +122,7 @@
       <li class="step kit"><b>5 · Index</b><span class="wt">kit, deterministic</span><p>Mean of the <span data-test-count>7</span> test scores, 0 to 100. <code>null</code> until every test is present.</p></li>
     </ol>
     <div class="json-grid">
-      <div class="card">
+      <div class="sheet">
         <h4>Request</h4>
         <p class="hint">The same field specs as Cloudflare's Clairic, so engines stay thin.</p>
 <pre class="code"><code data-json>{
@@ -198,7 +137,7 @@
   "reference_date": "2026-09-02"
 }</code></pre>
       </div>
-      <div class="card">
+      <div class="sheet">
         <h4>Answer</h4>
         <p class="hint">Every requested field is present. <code>p_null</code>, <code>confidence</code> and <code>span</code> are optional and never affect the Index.</p>
 <pre class="code"><code data-json>{"answers": {
@@ -209,7 +148,7 @@
 }}</code></pre>
       </div>
     </div>
-    <details class="card learn">
+    <details class="sheet more">
       <summary>Format details</summary>
       <ul class="format">
         <li>Field names match <code>^[A-Za-z_][A-Za-z0-9_.\-]{0,63}$</code>. Per-field settings: <code>instructions</code>, <code>unit</code> (durations: seconds to years), <code>integer</code>, <code>decimals</code> (0 to 6), <code>items</code> for lists (<code>text</code>, <code>number</code> or <code>date</code>). <code>reference_date</code> is optional.</li>
@@ -233,20 +172,18 @@
       <h2 id="h-scoring">Scoring</h2>
       <p>Per field, a score in 0 to 1. The rule depends on the field type.</p>
     </div>
-    <div class="card pad">
-      <dl class="rules">
-        <div class="rule"><dt>Unanswered</dt><dd>Request <code>unsupported</code> or <code>error</code>, field missing, or wrong value form: 0.</dd></div>
-        <div class="rule"><dt>Gold null</dt><dd>1 if the answer is <code>null</code> (or <code>[]</code> for a list), else 0.</dd></div>
-        <div class="rule"><dt>Gold non-null, answer null</dt><dd>0.</dd></div>
-        <div class="rule"><dt><code>text</code></dt><dd>SQuAD token F1 against the gold value and each listed alternative; the best one counts. Tokens are lowercased, punctuation and the articles a, an, the are removed, whitespace is collapsed.</dd></div>
-        <div class="rule"><dt><code>number</code>, <code>duration</code></dt><dd>The answer is parsed (numeric strings allowed; <code>,</code> thousands separators, <code>%</code> and currency symbols stripped). 1 when |a − g| ≤ 0.5 × 10<sup>−d</sup> + 1e-9 for a field with <code>decimals</code> d; without <code>decimals</code>, when |a − g| ≤ 1e-6 × max(1, |g|). Else 0.</dd></div>
-        <div class="rule"><dt><code>date</code>, <code>time</code>, <code>datetime</code></dt><dd><code>date</code>: exact <code>YYYY-MM-DD</code>. <code>time</code>: exact to the minute; seconds are compared only when gold has them. <code>datetime</code>: exact to the minute. Common unambiguous forms (ISO with <code>T</code> or a space, a trailing <code>Z</code> or offset dropped) are normalised first.</dd></div>
-        <div class="rule"><dt><code>list</code></dt><dd>Multiset F1 between answer items and gold items. Each item is matched with its item type's rule; text items match at token F1 ≥ 0.5 and count 1. Both empty: 1.</dd></div>
-        <div class="rule"><dt>Per test</dt><dd>Mean field score over the test's fields (micro), × 100.</dd></div>
-        <div class="rule"><dt>Index</dt><dd>Mean of the <span data-test-count>7</span> test scores. <code>null</code> until every test is present.</dd></div>
-        <div class="rule"><dt>Also reported</dt><dd>Per area (mean of its tests), per field type (micro over the suite), null precision and recall, Brier score over fields that report <code>p_null</code>, and latency (median, mean, p80 of request wall time). A run is complete only when every suite row has a result with status <code>ok</code> or <code>unsupported</code>.</dd></div>
-      </dl>
-    </div>
+    <dl class="rules">
+      <div class="rule"><dt>Unanswered</dt><dd>Request <code>unsupported</code> or <code>error</code>, field missing, or wrong value form: 0.</dd></div>
+      <div class="rule"><dt>Gold null</dt><dd>1 if the answer is <code>null</code> (or <code>[]</code> for a list), else 0.</dd></div>
+      <div class="rule"><dt>Gold non-null, answer null</dt><dd>0.</dd></div>
+      <div class="rule"><dt><code>text</code></dt><dd>SQuAD token F1 against the gold value and each listed alternative; the best one counts. Tokens are lowercased, punctuation and the articles a, an, the are removed, whitespace is collapsed.</dd></div>
+      <div class="rule"><dt><code>number</code>, <code>duration</code></dt><dd>The answer is parsed (numeric strings allowed; <code>,</code> thousands separators, <code>%</code> and currency symbols stripped). 1 when |a − g| ≤ 0.5 × 10<sup>−d</sup> + 1e-9 for a field with <code>decimals</code> d; without <code>decimals</code>, when |a − g| ≤ 1e-6 × max(1, |g|). Else 0.</dd></div>
+      <div class="rule"><dt><code>date</code>, <code>time</code>, <code>datetime</code></dt><dd><code>date</code>: exact <code>YYYY-MM-DD</code>. <code>time</code>: exact to the minute; seconds are compared only when gold has them. <code>datetime</code>: exact to the minute. Common unambiguous forms (ISO with <code>T</code> or a space, a trailing <code>Z</code> or offset dropped) are normalised first.</dd></div>
+      <div class="rule"><dt><code>list</code></dt><dd>Multiset F1 between answer items and gold items. Each item is matched with its item type's rule; text items match at token F1 ≥ 0.5 and count 1. Both empty: 1.</dd></div>
+      <div class="rule"><dt>Per test</dt><dd>Mean field score over the test's fields (micro), × 100.</dd></div>
+      <div class="rule"><dt>Index</dt><dd>Mean of the <span data-test-count>7</span> test scores. <code>null</code> until every test is present.</dd></div>
+      <div class="rule"><dt>Also reported</dt><dd>Per area (mean of its tests), per field type (micro over the suite), null precision and recall, Brier score over fields that report <code>p_null</code>, and latency (median, mean, p80 of request wall time). A run is complete only when every suite row has a result with status <code>ok</code> or <code>unsupported</code>.</dd></div>
+    </dl>
   </section>
 
   <section class="section" id="rules" aria-labelledby="h-rules">
@@ -255,7 +192,7 @@
       <p>Submissions are pull requests. Every listed run is public.</p>
     </div>
     <div class="pair">
-      <div class="card pad">
+      <div class="sheet pad">
         <h3>Rules</h3>
         <ul class="plain">
           <li>No truncation. One configuration for every test; no per-test prompt tuning.</li>
@@ -266,18 +203,8 @@
           <li>The maintainers (Turion AI) also submit their own models. All code, the suite and every run's results are public, so anyone can check them.</li>
         </ul>
       </div>
-      <div class="card pad" id="submit">
-        <svg class="spot" viewBox="0 0 120 120" aria-hidden="true">
-          <g stroke="#232323" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round">
-            <g transform="rotate(-6 52 70)">
-              <rect x="22" y="34" width="60" height="76" rx="7" fill="#FFFFFF"/>
-              <path d="M34 52h32M34 64h36M34 76h24M34 88h30" stroke="#C9C3B6" stroke-width="3.5"/>
-            </g>
-            <circle cx="88" cy="36" r="22" fill="#FFD21E"/>
-            <path d="M88 48V26M78 35l10-10 10 10" stroke-width="4"/>
-            <path d="M12 26l6-6M8 44h8M104 76l8 4" stroke-width="3"/>
-          </g>
-        </svg>
+      <div class="sheet pad" id="submit">
+        <img class="spot" src="assets/art/submit.webp" width="180" height="180" alt="The yellow character drops a stapled report into an inbox tray.">
         <h3>Submit a run</h3>
         <ol class="steps">
           <li>Install the kit and fetch the frozen suite.
@@ -314,7 +241,7 @@ python -m extract_index suite download</code></pre></li>
     </div>
     <p class="foot-meta">Edition <span data-edition>0.1</span>. Board generated <span data-generated>—</span>. The kit and this page are MIT licensed; each test keeps its source licence.</p>
     <p class="foot-meta">An independent benchmark. Not affiliated with Cloudflare or Hugging Face. Hosted on Hugging Face Spaces. Org avatars label each listing and belong to their owners.</p>
-    <p class="foot-meta">Visual style after the <a href="https://huggingface.co/spaces/multimodalart/jev-decision-index">Decision Index board</a> by multimodalart.</p>
+    <p class="foot-meta">Inspired by <a href="https://huggingface.co/spaces/multimodalart/jev-decision-index">Decision-Index</a>.</p>
   </div>
 </footer>
 

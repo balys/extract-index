@@ -5,8 +5,22 @@
 
   var BOARD_URL = 'data/board.json';
   var TYPE_ORDER = ['text', 'number', 'date', 'time', 'datetime', 'duration', 'list'];
-  var AREA_COLOURS = { Spans: '#3B7CF6', Documents: '#E8740C', Numbers: '#A855F7', Entities: '#3E8E5E' };
-  var PALETTE = ['#3B7CF6', '#E8740C', '#A855F7', '#3E8E5E', '#EF3E36', '#FFD21E'];
+  // Highlighter colours come from the stylesheet tokens; one colour per area, used everywhere.
+  var rootStyle = window.getComputedStyle(document.documentElement);
+  function token(name, fallback) {
+    var v = rootStyle.getPropertyValue(name);
+    return v && v.trim() ? v.trim() : fallback;
+  }
+  var HL = {
+    yellow: token('--hl-yellow', '#FFD21E'),
+    orange: token('--hl-orange', '#FF9D00'),
+    mint: token('--hl-mint', '#4ED9A0'),
+    sky: token('--hl-sky', '#52C4F7'),
+    pink: token('--hl-pink', '#FF7EB6')
+  };
+  var AREA_COLOURS = { Spans: HL.mint, Documents: HL.orange, Numbers: HL.sky, Entities: HL.pink };
+  var AREA_STICKERS = { Spans: 'area-spans', Documents: 'area-documents', Numbers: 'area-numbers', Entities: 'area-entities' };
+  var PALETTE = [HL.mint, HL.orange, HL.sky, HL.pink, HL.yellow];
 
   var state = {
     board: null,
@@ -80,12 +94,17 @@
     return e.kind === 'api' ? 'k-api' : 'k-open';
   }
   function kindPill(e) {
-    if (e.system === 'baseline') return '<span class="pill k-base">Floor</span>';
-    var k = e.kind === 'open' ? '<span class="pill k-open">Open weights</span>'
-      : e.kind === 'api' ? '<span class="pill k-api">API</span>'
-      : e.kind ? '<span class="pill">' + esc(e.kind) + '</span>' : '';
-    if (e.system === 'two') k += '<span class="pill k-two">System Two, reference</span>';
+    if (e.system === 'baseline') return '<span class="tag k-base">floor</span>';
+    var k = e.kind === 'open' ? '<span class="tag k-open">open weights</span>'
+      : e.kind === 'api' ? '<span class="tag k-api">api</span>'
+      : e.kind ? '<span class="tag">' + esc(e.kind) + '</span>' : '';
+    if (e.system === 'two') k += '<span class="tag k-two">system two, reference</span>';
     return k;
+  }
+  function stickerHtml(area, size) {
+    var f = AREA_STICKERS[area];
+    if (!f) return '';
+    return '<img src="assets/art/' + f + '.webp" width="' + size + '" height="' + size + '" alt="" loading="lazy">';
   }
 
   /* ---------- JSON examples ---------- */
@@ -186,55 +205,47 @@
     });
 
     var n = ones.length + twos.length;
-    var avail = Math.max(240, host.clientWidth - 42 - 24 - (twos.length ? 32 : 0));
-    var slot = Math.max(64, Math.min(110, Math.floor((avail - Math.max(0, n - 1) * 10) / Math.max(n, 1))));
 
-    function col(e, isTwo) {
-      var v = get(e), h = clamp(v);
-      var cls = 'rk-bar ' + (isTwo ? 'k-two' : (colour ? 'k-area' : kindClass(e)));
-      var style = 'height:' + h + '%' + (colour ? ';--c:' + colour : '');
-      var rankHtml = isTwo ? '<span class="rk-rank ref">ref</span>' : '<span class="rk-rank">#' + ranks[e._id] + '</span>';
-      return '<div class="rk-col">' + rankHtml + '<span class="rk-val">' + v.toFixed(1) + '</span>' +
+    // One ruled line per run: margin number, avatar, name, then a highlighter stroke whose length is the score.
+    function line(e, isTwo) {
+      var v = get(e), w = clamp(v) / 100;
+      var cls = 'stroke ' + (isTwo ? 'k-two' : (colour ? 'k-area' : kindClass(e)));
+      var style = '--v:' + w.toFixed(4) + (colour ? ';--c:' + colour : '');
+      var no = isTwo ? '<span class="ln-no ref">ref</span>' : '<span class="ln-no">' + ranks[e._id] + '.</span>';
+      return '<li' + (isTwo ? ' class="two"' : '') + '>' + no + avatarHtml(e) +
+        '<span class="ln-who"><b>' + esc(e.name || 'Unnamed') + '</b><small>' + esc(e.org || '') + '</small></span>' +
         '<button type="button" class="' + cls + '" style="' + style + '" data-id="' + e._id + '" data-tip-id="' + e._id + '"' +
         ' aria-label="' + esc(e.name) + ', ' + metricLabel(m) + ' ' + v.toFixed(1) + '. Open the row in the table">' +
-        (h >= 16 ? avatarHtml(e) : '') + '</button></div>';
+        '<i aria-hidden="true"></i><span class="tag">' + v.toFixed(1) + '</span></button></li>';
     }
-    function label(e) {
-      return '<div><b>' + esc(e.name || 'Unnamed') + '</b><span class="org">' + esc(e.org || '') + '</span></div>';
-    }
-    var bars = ones.map(function (e) { return col(e, false); });
-    var labels = ones.map(label);
-    if (twos.length) {
-      bars.push('<div class="rk-col gap" aria-hidden="true"></div>');
-      labels.push('<div class="gap" aria-hidden="true"></div>');
-      bars = bars.concat(twos.map(function (e) { return col(e, true); }));
-      labels = labels.concat(twos.map(label));
-    }
-    var grid = [20, 40, 60, 80, 100].map(function (v) { return '<div class="rk-grid" style="bottom:' + v + '%"></div>'; }).join('');
-    var ys = [0, 20, 40, 60, 80, 100].filter(function (v) { return !isNum(floorV) || Math.abs(v - floorV) > 7; })
-      .map(function (v) { return '<span style="bottom:' + v + '%">' + v + '</span>'; }).join('');
+    var axis = '<div class="ruled-axis" aria-hidden="true">' + [0, 25, 50, 75, 100].map(function (v) {
+      return '<span style="left:' + v + '%">' + v + '</span>';
+    }).join('') + '</div>';
+    var grid = [25, 50, 75, 100].map(function (v) { return '<div class="ruled-grid" style="--x:' + (v / 100) + '" aria-hidden="true"></div>'; }).join('');
     var floor = '';
     if (isNum(floorV)) {
-      ys += '<span class="floor" style="bottom:' + clamp(floorV) + '%" title="Floor: answer null everywhere">' + floorV.toFixed(1) + '</span>';
-      floor = '<div class="rk-floor" style="bottom:' + clamp(floorV) + '%"></div>';
+      var f = (clamp(floorV) / 100).toFixed(4);
+      floor = '<div class="ruled-floor" style="--f:' + f + '" aria-hidden="true"></div>' +
+        '<div class="ruled-floor-lab' + (floorV > 62 ? ' flip' : '') + '" style="--f:' + f + '" aria-hidden="true">floor ' + floorV.toFixed(1) + ': answer null everywhere</div>';
+    }
+    var list = '<ol>' + ones.map(function (e) { return line(e, false); }).join('') + '</ol>';
+    if (twos.length) {
+      list += '<p class="ruled-sep">System Two, reference: generating models, not ranked</p>' +
+        '<ol>' + twos.map(function (e) { return line(e, true); }).join('') + '</ol>';
     }
     var note = '';
     if (n < 4) {
-      note = '<div class="rk-note" style="--n:' + n + '">' +
+      note = '<p class="ruled-note hand">' +
         (n ? plural(n, 'listed run') + ' so far.' : 'No complete runs yet.') +
-        ' Runs are added by pull request; <a href="#submit">submit yours</a>.</div>';
+        ' Runs are added by pull request; <a href="#submit">submit yours</a>.</p>';
     }
     var incompleteNote = incomplete
-      ? '<p class="rk-incomplete">' + plural(incomplete, 'incomplete run') + ' without ' + (m === 'index' ? 'an' : 'a') + ' ' + esc(metricLabel(m)) + ' score: see the table.</p>'
+      ? '<p class="ruled-incomplete">' + plural(incomplete, 'incomplete run') + ' without ' + (m === 'index' ? 'an' : 'a') + ' ' + esc(metricLabel(m)) + ' score: see the table.</p>'
       : '';
     host.innerHTML =
-      '<div class="rk" style="--slot:' + slot + 'px" role="group" aria-label="Ranking by ' + esc(metricLabel(m)) + '">' +
-        '<div class="rk-y" aria-hidden="true">' + ys + '</div>' +
-        '<div class="rk-scroll"><div class="rk-inner">' +
-          '<div class="rk-plot">' + grid + floor + note + '<div class="rk-bars">' + bars.join('') + '</div></div>' +
-          '<div class="rk-labels">' + labels.join('') + '</div>' +
-        '</div></div>' +
-      '</div>' + incompleteNote;
+      '<div class="ruled' + (isNum(floorV) ? ' has-floor' : '') + '" role="group" aria-label="Ranking by ' + esc(metricLabel(m)) + '">' +
+        axis + grid + floor + list +
+      '</div>' + note + incompleteNote;
   }
 
   /* ---------- by area ---------- */
@@ -258,7 +269,7 @@
           (isNum(floorV) ? '<u style="left:' + clamp(floorV) + '%"></u>' : '') + '</span>' +
           '<span class="hb-val">' + v.toFixed(1) + '</span></li>';
       }).join('') || '<li class="hb na"><span class="hb-name muted">No complete runs</span></li>';
-      return '<div class="area-col" style="--c:' + c + '"><h4><i aria-hidden="true"></i>' + esc(a) +
+      return '<div class="area-col" style="--c:' + c + '"><h4>' + stickerHtml(a, 28) + esc(a) +
         '<small>' + plural(nTests, 'test') + (isNum(floorV) ? ', floor ' + floorV.toFixed(1) : '') + '</small></h4><ol>' + items + '</ol></div>';
     });
     host.innerHTML = '<div class="scroll"><div class="areas">' + cols.join('') + '</div></div>';
@@ -267,10 +278,16 @@
   /* ---------- field types ---------- */
 
   var HATCH_DEF = '<defs><pattern id="hatch-svg" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">' +
-    '<rect width="6" height="6" fill="#FBF8F1"/><rect width="3" height="6" fill="#FFD21E"/></pattern></defs>';
+    '<rect width="6" height="6" style="fill:' + HL.yellow + ';fill-opacity:.35"/><rect width="3" height="6" style="fill:' + HL.yellow + '"/></pattern></defs>';
 
   function dotClass(e) {
-    return 'dot' + (e.system === 'two' ? ' two' : (e.kind === 'api' ? ' api' : ''));
+    return 'dab' + (e.system === 'two' ? ' two' : (e.kind === 'api' ? ' api' : ''));
+  }
+  function chipSvg(text, x, cy, anchorEnd) {
+    var w = Math.round(text.length * 6.7 + 12), h = 18;
+    var bx = anchorEnd ? x - w : x;
+    return '<rect class="chip-box" x="' + bx + '" y="' + (cy - h / 2) + '" width="' + w + '" height="' + h + '" rx="4"/>' +
+      '<text class="chip-text" x="' + (bx + w / 2) + '" y="' + (cy + 4) + '" text-anchor="middle">' + esc(text) + '</text>';
   }
 
   function renderTypes() {
@@ -284,18 +301,18 @@
       .concat(Object.keys(keys).filter(function (t) { return TYPE_ORDER.indexOf(t) < 0; }).sort());
     if (!types.length) { host.innerHTML = '<p class="empty">Not reported yet.</p>'; return; }
 
-    var W = Math.max(300, host.clientWidth || 480), left = 78, right = 18, top = 24, rowH = 30, H = top + types.length * rowH + 6;
+    var W = Math.max(300, host.clientWidth || 480), left = 88, right = 18, top = 26, rowH = 32, H = top + types.length * rowH + 4;
     var x = function (v) { return left + (W - left - right) * clamp(v) / 100; };
     var parts = [HATCH_DEF];
     [0, 25, 50, 75, 100].forEach(function (v) {
-      parts.push('<line class="ax" x1="' + x(v) + '" y1="' + (top - 4) + '" x2="' + x(v) + '" y2="' + (H - 6) + '"/>');
+      parts.push('<line class="ax" x1="' + x(v) + '" y1="' + (top - 4) + '" x2="' + x(v) + '" y2="' + (H - 4) + '"/>');
       parts.push('<text class="tick" x="' + x(v) + '" y="' + (top - 10) + '" text-anchor="middle">' + v + '</text>');
     });
     var top1 = g.ranked[0];
     types.forEach(function (t, i) {
       var cy = top + i * rowH + rowH / 2;
-      parts.push('<text class="rowlab" x="' + (left - 10) + '" y="' + (cy + 4) + '" text-anchor="end">' + esc(t) + '</text>');
-      parts.push('<line x1="' + left + '" y1="' + cy + '" x2="' + x(100) + '" y2="' + cy + '" stroke="#D8D3C8" stroke-width="1.5"/>');
+      parts.push(chipSvg(t, left - 10, cy, true));
+      parts.push('<line class="ax" x1="' + left + '" y1="' + (cy + rowH / 2) + '" x2="' + x(100) + '" y2="' + (cy + rowH / 2) + '"/>');
       var fv = g.floor && g.floor.types ? g.floor.types[t] : null;
       if (isNum(fv)) {
         parts.push('<line class="floor-line" x1="' + x(fv) + '" y1="' + (cy - 9) + '" x2="' + x(fv) + '" y2="' + (cy + 9) + '"><title>floor: ' + fv.toFixed(1) + '</title></line>');
@@ -303,11 +320,11 @@
       entries.forEach(function (e) {
         var v = e.types[t];
         if (!isNum(v)) return;
-        parts.push('<circle class="' + dotClass(e) + '" cx="' + x(v) + '" cy="' + cy + '" r="6.5" tabindex="0" data-tip-id="' + e._id + '" data-tip-extra="' + esc(t) + ': ' + v.toFixed(1) + '">' +
+        parts.push('<circle class="' + dotClass(e) + '" cx="' + x(v) + '" cy="' + cy + '" r="7.5" tabindex="0" data-tip-id="' + e._id + '" data-tip-extra="' + esc(t) + ': ' + v.toFixed(1) + '">' +
           '<title>' + esc(e.name) + ', ' + esc(t) + ': ' + v.toFixed(1) + '</title></circle>');
       });
       if (top1 && top1.types && isNum(top1.types[t])) {
-        parts.push('<text class="dlab" x="' + x(top1.types[t]) + '" y="' + (cy - 10) + '" text-anchor="middle">' + top1.types[t].toFixed(1) + '</text>');
+        parts.push('<text class="dlab" x="' + x(top1.types[t]) + '" y="' + (cy - 11) + '" text-anchor="middle">' + top1.types[t].toFixed(1) + '</text>');
       }
     });
     host.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Per field type scores, one dot per run' +
@@ -342,6 +359,9 @@
     parts.push('<line class="ax-base" x1="' + left + '" y1="' + y(0) + '" x2="' + (W - right) + '" y2="' + y(0) + '"/>');
     parts.push('<text class="tick lab" x="' + (W - right) + '" y="' + (H - 4) + '" text-anchor="end">median latency per request, log scale</text>');
     parts.push('<text class="tick lab" transform="translate(10 ' + y(50) + ') rotate(-90)" text-anchor="middle">Index</text>');
+    // The corner you want: a faint highlighter wash, fast and strong.
+    parts.unshift('<rect class="corner" x="' + left + '" y="' + top + '" width="' + Math.max(0, x(Math.min(300, maxLat)) - left) + '" height="' + Math.max(0, y(70) - top) + '" rx="6"/>');
+    parts.push('<text class="corner-lab" x="' + (left + 8) + '" y="' + (top + 15) + '">fast and strong</text>');
     if (g.floor && isNum(g.floor.index)) {
       parts.push('<line class="floor-line" x1="' + left + '" y1="' + y(g.floor.index) + '" x2="' + (W - right) + '" y2="' + y(g.floor.index) + '"/>');
       parts.push('<text class="floor-lab" x="' + (W - right) + '" y="' + (y(g.floor.index) - 5) + '" text-anchor="end">floor ' + g.floor.index.toFixed(1) + '</text>');
@@ -349,7 +369,8 @@
     if (!pts.length) {
       parts.push('<text class="dlab soft" x="' + ((left + W - right) / 2) + '" y="' + y(55) + '" text-anchor="middle">No timed runs yet</text>');
     }
-    var labelled = pts.length <= 8 ? pts.slice() : pts.slice().sort(sortDesc(function (e) { return e.index; })).slice(0, 5);
+    var maxLabels = W < 420 ? 4 : 8;
+    var labelled = pts.length <= maxLabels ? pts.slice() : pts.slice().sort(sortDesc(function (e) { return e.index; })).slice(0, W < 420 ? 3 : 5);
     var useAvatars = pts.length <= 10;
     // Nudge labels apart vertically so a cluster of points stays readable.
     var labelY = {};
@@ -367,9 +388,9 @@
       var title = '<title>' + esc(e.name) + ': Index ' + e.index.toFixed(1) + ', median ' + fmtMs(e.latency_ms.median) + ' ms</title>';
       if (src) {
         parts.push('<clipPath id="pt-clip-' + i + '"><circle cx="' + cx + '" cy="' + cy + '" r="10"/></clipPath>' +
-          '<circle cx="' + cx + '" cy="' + cy + '" r="11.5" fill="#fff" stroke="#232323" stroke-width="1.5"/>' +
+          '<circle class="pt-ring" cx="' + cx + '" cy="' + cy + '" r="11.5"/>' +
           '<image href="' + esc(src) + '" x="' + (cx - 10) + '" y="' + (cy - 10) + '" width="20" height="20" clip-path="url(#pt-clip-' + i + ')" preserveAspectRatio="xMidYMid slice"/>' +
-          '<circle cx="' + cx + '" cy="' + cy + '" r="11.5" fill="transparent" stroke="none" tabindex="0"' + tip + '>' + title + '</circle>');
+          '<circle class="pt-hit" cx="' + cx + '" cy="' + cy + '" r="11.5" tabindex="0"' + tip + '>' + title + '</circle>');
       } else {
         parts.push('<circle class="' + dotClass(e) + '" cx="' + cx + '" cy="' + cy + '" r="7" tabindex="0"' + tip + '>' + title + '</circle>');
       }
@@ -380,7 +401,7 @@
         var ly = labelY[e._id], gap = src ? 15 : 11;
         var lx = anchor === 'start' ? cx + gap : cx - gap;
         if (ly - cy > 6) {
-          parts.push('<line x1="' + (anchor === 'start' ? cx + gap - 4 : cx - gap + 4) + '" y1="' + cy + '" x2="' + lx + '" y2="' + ly + '" stroke="#8C8C8C" stroke-width="1"/>');
+          parts.push('<line class="leader" x1="' + (anchor === 'start' ? cx + gap - 4 : cx - gap + 4) + '" y1="' + cy + '" x2="' + lx + '" y2="' + ly + '"/>');
         }
         parts.push('<text class="dlab' + (e.system === 'two' ? ' soft' : '') + '" x="' + lx + '" y="' + (ly + 4) + '" text-anchor="' + anchor + '">' + esc(name) + '</text>');
       }
@@ -402,17 +423,17 @@
   function tipHtml(e, extra) {
     var areas = state.board.areas || [];
     var rows = [];
-    rows.push('<div class="tiprow"><span>Index</span><b>' + fmtScore(e.index) + (isNum(e.index) ? '' : ' incomplete') + '</b></div>');
+    rows.push('<div class="nr"><span>Index</span><b>' + fmtScore(e.index) + (isNum(e.index) ? '' : ' incomplete') + '</b></div>');
     areas.forEach(function (a) {
-      rows.push('<div class="tiprow"><span><i style="--c:' + areaColour(a) + '"></i>' + esc(a) + '</span><b>' + fmtScore(e.areas ? e.areas[a] : null) + '</b></div>');
+      rows.push('<div class="nr"><span><i style="--c:' + areaColour(a) + '"></i>' + esc(a) + '</span><b>' + fmtScore(e.areas ? e.areas[a] : null) + '</b></div>');
     });
     if (e.latency_ms && isNum(e.latency_ms.median)) {
-      rows.push('<div class="tiprow"><span>Latency, median</span><b>' + fmtMs(e.latency_ms.median) + ' ms</b></div>');
+      rows.push('<div class="nr"><span>Latency, median</span><b>' + fmtMs(e.latency_ms.median) + ' ms</b></div>');
     }
     var who = [e.org, e.system === 'two' ? 'System Two, reference' : e.system === 'baseline' ? 'floor' : (e.kind === 'open' ? 'open weights' : e.kind === 'api' ? 'API' : '')]
       .filter(Boolean).join(', ');
-    return '<strong>' + esc(e.name) + '</strong>' + (who ? '<div class="tipnote">' + esc(who) + '</div>' : '') + rows.join('') +
-      (extra ? '<div class="tipnote">' + esc(extra) + '</div>' : '');
+    return '<strong>' + esc(e.name) + '</strong>' + (who ? '<div class="ns">' + esc(who) + '</div>' : '') + rows.join('') +
+      (extra ? '<div class="ns">' + esc(extra) + '</div>' : '');
   }
   function showTip(el) {
     var e = entryById(el.getAttribute('data-tip-id'));
@@ -509,17 +530,18 @@
       if (r.missing) bits.push(fmtInt(r.missing) + ' missing');
       rowsText = fmtInt(r.total) + ' requests: ' + bits.join(', ');
     }
+    // The run facts print as a receipt slip.
     return '<div class="dcol"><h4>Tests</h4><ul class="scores">' + testRows + '</ul></div>' +
       '<div class="dcol"><h4>Field types</h4><ul class="scores">' + typeRows + '</ul></div>' +
-      '<div class="dcol dfacts"><h4>Run</h4><dl>' +
-      '<dt>Null precision / recall</dt><dd>' + nulls + '</dd>' +
-      '<dt>Latency median / mean / p80</dt><dd>' + latency + '</dd>' +
-      '<dt>Rows</dt><dd>' + esc(rowsText) + '</dd>' +
-      '<dt>Hardware</dt><dd>' + esc(e.hardware || '—') + '</dd>' +
-      '<dt>Date</dt><dd>' + esc(fmtDate(e.date)) + '</dd>' +
-      '<dt>Links</dt><dd class="links">' + (linkItems || '—') + '</dd>' +
-      (e.notes ? '<dt>Notes</dt><dd>' + esc(e.notes) + '</dd>' : '') +
-      '</dl></div>';
+      '<div class="dcol"><h4>Run</h4><div class="receipt run-slip"><dl>' +
+      '<div><dt>Null precision / recall</dt><dd>' + nulls + '</dd></div>' +
+      '<div><dt>Latency med / mean / p80</dt><dd>' + latency + '</dd></div>' +
+      '<div><dt>Date</dt><dd>' + esc(fmtDate(e.date)) + '</dd></div>' +
+      '<div class="wide"><dt>Rows</dt><dd>' + esc(rowsText) + '</dd></div>' +
+      '<div class="wide"><dt>Hardware</dt><dd>' + esc(e.hardware || '—') + '</dd></div>' +
+      '<div class="wide"><dt>Links</dt><dd class="links">' + (linkItems || '—') + '</dd></div>' +
+      (e.notes ? '<div class="wide"><dt>Notes</dt><dd>' + esc(e.notes) + '</dd></div>' : '') +
+      '</dl></div></div>';
   }
 
   function rowHtml(e, areas) {
@@ -531,7 +553,7 @@
     var cols = 4 + areas.length;
     return '<tr class="row' + (two ? ' two' : '') + (base ? ' base' : '') + (open ? ' open' : '') + '" data-id="' + e._id + '">' +
       '<td class="c-rank">' + rankCell + '</td>' +
-      '<td class="c-model"><div class="who">' + avatarHtml(e) + '<div>' +
+      '<td class="c-model"><div class="model-cell">' + avatarHtml(e) + '<div>' +
         '<button type="button" class="expand" aria-expanded="' + open + '" aria-controls="' + e._id + '-detail">' +
           '<svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5L10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
           '<span class="name">' + esc(e.name || 'Unnamed') + '</span>' +
@@ -649,7 +671,7 @@
       }
     });
     $('#ranking').addEventListener('click', function (ev) {
-      var bar = ev.target.closest('.rk-bar');
+      var bar = ev.target.closest('.stroke');
       if (bar) { hideTip(); jumpToRow(bar.getAttribute('data-id')); }
     });
     $('[data-switch]').addEventListener('click', function (ev) {
@@ -670,6 +692,31 @@
         newsBtn.setAttribute('aria-expanded', String(open));
       });
     }
+  }
+
+  /* ---------- index tabs: mark the section in view ---------- */
+
+  function bindTabs() {
+    var links = $all('.tabs a[href^="#"]');
+    if (!links.length) return;
+    var targets = links.map(function (a) {
+      return { a: a, el: document.getElementById(a.getAttribute('href').slice(1)) };
+    }).filter(function (t) { return t.el; });
+    var ticking = false;
+    function update() {
+      ticking = false;
+      var current = null, line = 140;
+      targets.forEach(function (t) {
+        if (t.el.getBoundingClientRect().top <= line) current = t;
+      });
+      targets.forEach(function (t) {
+        if (t === current) t.a.setAttribute('aria-current', 'true'); else t.a.removeAttribute('aria-current');
+      });
+    }
+    window.addEventListener('scroll', function () {
+      if (!ticking) { ticking = true; window.requestAnimationFrame(update); }
+    }, { passive: true });
+    update();
   }
 
   function openFromHash() {
@@ -708,7 +755,7 @@
     var html = areas.map(function (a) {
       var ts = tests.filter(function (t) { return t.area === a; });
       if (!ts.length) return '';
-      return '<div class="area" style="--c:' + areaColour(a) + '"><h3><i aria-hidden="true"></i>' + esc(a) + ' <span class="count">' + plural(ts.length, 'test') + '</span></h3>' +
+      return '<div class="area" style="--c:' + areaColour(a) + '"><h3>' + stickerHtml(a, 56) + esc(a) + ' <span class="count">' + plural(ts.length, 'test') + '</span></h3>' +
         '<div class="tests-grid">' + ts.map(testCard).join('') + '</div></div>';
     }).join('');
     host.innerHTML = html || '<div class="card empty"><p>No tests listed in the board file.</p></div>';
@@ -734,7 +781,9 @@
       ranked + (ranked === 1 ? ' ranked entry' : ' ranked entries')];
     if (g.two.length) meta.push(plural(g.two.length, 'reference row'));
     meta.push('updated ' + gen);
-    setText('[data-meta]', meta.join(' · '));
+    $all('[data-meta]').forEach(function (el) {
+      el.innerHTML = meta.map(function (t) { return '<span>' + esc(t) + '</span>'; }).join('');
+    });
     var bits = [];
     if (ranked) bits.push(ranked + (ranked === 1 ? ' ranked entry' : ' ranked entries'));
     if (g.one.length - ranked) bits.push(plural(g.one.length - ranked, 'incomplete run'));
@@ -765,6 +814,7 @@
     renderJsonExamples();
     bindBoardEvents();
     bindTips();
+    bindTabs();
 
     fetch(BOARD_URL, { cache: 'no-store' })
       .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status + ' for ' + BOARD_URL + '.'); return r.json(); })
