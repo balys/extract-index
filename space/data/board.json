@@ -1,6 +1,6 @@
 {
  "edition": "0.1",
- "generated_utc": "2026-10-24T09:52:34Z",
+ "generated_utc": "2026-10-24T19:22:10Z",
  "areas": [
   "Spans",
   "Documents",
@@ -128,6 +128,63 @@
   }
  ],
  "entries": [
+  {
+   "id": "turion-ai-turion-extract-alpha",
+   "name": "Turion Extract alpha",
+   "org": "Turion AI",
+   "kind": "open",
+   "system": "one",
+   "index": 75.3,
+   "areas": {
+    "Spans": 79.83,
+    "Documents": 85.76,
+    "Numbers": 58.96,
+    "Entities": 77.98
+   },
+   "tests": {
+    "squad2": 93.32,
+    "cuad": 66.34,
+    "cord": 88.63,
+    "docs": 82.9,
+    "drop": 63.67,
+    "tatqa": 54.25,
+    "fewnerd": 77.98
+   },
+   "types": {
+    "text": 93.29,
+    "number": 65.44,
+    "date": 82.76,
+    "time": 86.41,
+    "datetime": 52.8,
+    "duration": 56.69,
+    "list": 67.97
+   },
+   "null": {
+    "precision": 91.44,
+    "recall": 94.05
+   },
+   "latency_ms": {
+    "median": 67.3,
+    "mean": 79.6,
+    "p80": 81.9
+   },
+   "rows": {
+    "total": 1997,
+    "ok": 1997,
+    "unsupported": 0,
+    "error": 0,
+    "missing": 0
+   },
+   "avatar": "assets/orgs/turion-ai.webp",
+   "hardware": "1x NVIDIA RTX PRO 6000 Blackwell Workstation Edition",
+   "links": {
+    "model": "https://huggingface.co/turion-ai/turion-extract-alpha",
+    "results": "https://huggingface.co/datasets/turion-ai/turion-extract-alpha-index-results",
+    "submission": "https://github.com/balys/extract-index/pull/1"
+   },
+   "date": "2026-10-24",
+   "notes": "Gemma 4 12B with a LoRA adapter and extraction heads: one forward pass, no generated tokens. Trained on the training splits of SQuAD 2.0, CUAD, CORD, DROP, TAT-QA and Few-NERD (the index scores their validation and test splits) and on synthetic documents from Turion AI's own generator, written without the index's docs generator, so docs is the only test outside its training domains. Those train splits also repeat 110 suite documents word for word (82 Few-NERD, 21 CORD, 7 DROP); scored without them the index is still 75.30. Run by Turion AI, one request at a time in BF16; latency is the local forward pass, with no network."
+  },
   {
    "id": "cloudflare-clairic-preview",
    "name": "Clairic (preview)",
