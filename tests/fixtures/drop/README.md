@@ -1,0 +1,1 @@
+Four passages (history_591, history_2847, nfl_122, history_23) with their questions from DROP validation (ucinlp/drop @ 95cda593fae71b60b5b19f82de3fcf3298c1239c), Dua et al. 2019, CC BY-SA 4.0, https://allenai.org/data/drop; for the offline drop builder tests.

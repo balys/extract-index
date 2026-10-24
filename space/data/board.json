@@ -1,0 +1,131 @@
+{
+ "edition": "0.1",
+ "generated_utc": "2026-10-24T09:24:20Z",
+ "areas": [
+  "Spans",
+  "Documents",
+  "Numbers",
+  "Entities"
+ ],
+ "tests": [
+  {
+   "name": "squad2",
+   "title": "SQuAD 2.0",
+   "area": "Spans",
+   "description": "Wikipedia paragraphs with every crowd-written question on them, about half of which the paragraph cannot answer.",
+   "requests": 300,
+   "fields": 2909,
+   "types": [
+    "text"
+   ],
+   "null_share": 0.505,
+   "metric": "token F1",
+   "license": "CC BY-SA 4.0",
+   "source_url": "https://rajpurkar.github.io/SQuAD-explorer/"
+  },
+  {
+   "name": "cuad",
+   "title": "CUAD",
+   "area": "Spans",
+   "description": "Windows of real commercial contracts with clause fields from CUAD's 41 lawyer-labelled categories, many of which the window does not contain.",
+   "requests": 250,
+   "fields": 992,
+   "types": [
+    "text",
+    "list"
+   ],
+   "null_share": 0.4506,
+   "metric": "token F1 / list F1",
+   "license": "CC BY 4.0",
+   "source_url": "https://www.atticusprojectai.org/cuad"
+  },
+  {
+   "name": "cord",
+   "title": "CORD v2",
+   "area": "Documents",
+   "description": "Totals, taxes, payments and line items from the OCR text of 200 Indonesian shop and restaurant receipts.",
+   "requests": 197,
+   "fields": 1166,
+   "types": [
+    "number",
+    "list"
+   ],
+   "null_share": 0.331,
+   "metric": "exact number / list F1",
+   "license": "CC BY 4.0",
+   "source_url": "https://github.com/clovaai/cord"
+  },
+  {
+   "name": "docs",
+   "title": "Business documents",
+   "area": "Documents",
+   "description": "Synthetic invoices, receipts, emails, statements, bookings, logs and reports, each with 5-9 typed fields to read, compute or leave null.",
+   "requests": 400,
+   "fields": 2813,
+   "types": [
+    "text",
+    "number",
+    "date",
+    "time",
+    "datetime",
+    "duration",
+    "list"
+   ],
+   "null_share": 0.2211,
+   "metric": "exact / token F1 / list F1",
+   "license": "CC BY 4.0",
+   "source_url": "https://github.com/balys/extract-index"
+  },
+  {
+   "name": "drop",
+   "title": "DROP",
+   "area": "Numbers",
+   "description": "Wikipedia and NFL-report passages with questions that need counting, arithmetic, sorting or dates, answered as numbers, dates or spans.",
+   "requests": 300,
+   "fields": 1380,
+   "types": [
+    "text",
+    "number",
+    "date",
+    "list"
+   ],
+   "null_share": 0.0,
+   "metric": "exact number / token F1",
+   "license": "CC BY-SA 4.0",
+   "source_url": "https://allenai.org/data/drop"
+  },
+  {
+   "name": "tatqa",
+   "title": "TAT-QA",
+   "area": "Numbers",
+   "description": "Questions over financial report tables and their text, answered with exact numbers, text spans or lists of spans.",
+   "requests": 250,
+   "fields": 1500,
+   "types": [
+    "text",
+    "number",
+    "list"
+   ],
+   "null_share": 0.0,
+   "metric": "exact number / token F1",
+   "license": "CC BY 4.0",
+   "source_url": "https://nextplusplus.github.io/TAT-QA/"
+  },
+  {
+   "name": "fewnerd",
+   "title": "Few-NERD",
+   "area": "Entities",
+   "description": "Every mention of a named-entity category (people, organizations, places, works, products, events and more) in short Wikipedia passages.",
+   "requests": 300,
+   "fields": 1517,
+   "types": [
+    "list"
+   ],
+   "null_share": 0.4318,
+   "metric": "list F1",
+   "license": "CC BY-SA 4.0",
+   "source_url": "https://ningding97.github.io/fewnerd/"
+  }
+ ],
+ "entries": []
+}

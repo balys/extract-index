@@ -1,0 +1,1 @@
+Two runs of consecutive sentences (ids 0-35 and 7771-7790) of the Few-NERD supervised test split (DFKI-SLT/few-nerd @ 205f3e9c9f3577ea2561d43f2f62dc249ab92d5b, supervised/test-00000-of-00001.parquet), Ding et al. 2021, CC BY-SA 4.0, https://ningding97.github.io/fewnerd/; for the offline fewnerd builder tests.

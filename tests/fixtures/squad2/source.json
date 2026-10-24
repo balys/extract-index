@@ -1,0 +1,256 @@
+{
+ "paragraphs": [
+  {
+   "title": "Normans",
+   "context": "The Normans (Norman: Nourmands; French: Normands; Latin: Normanni) were the people who in the 10th and 11th centuries gave their name to Normandy, a region in France. They were descended from Norse (\"Norman\" comes from \"Norseman\") raiders and pirates from Denmark, Iceland and Norway who, under their leader Rollo, agreed to swear fealty to King Charles III of West Francia. Through generations of assimilation and mixing with the native Frankish and Roman-Gaulish populations, their descendants would gradually merge with the Carolingian-based cultures of West Francia. The distinct cultural and ethnic identity of the Normans emerged initially in the first half of the 10th century, and it continued to evolve over the succeeding centuries.",
+   "qas": [
+    {
+     "id": "56ddde6b9a695914005b9628",
+     "question": "In what country is Normandy located?",
+     "answers": [
+      "France",
+      "France",
+      "France",
+      "France"
+     ]
+    },
+    {
+     "id": "56ddde6b9a695914005b9629",
+     "question": "When were the Normans in Normandy?",
+     "answers": [
+      "10th and 11th centuries",
+      "in the 10th and 11th centuries",
+      "10th and 11th centuries",
+      "10th and 11th centuries"
+     ]
+    },
+    {
+     "id": "56ddde6b9a695914005b962a",
+     "question": "From which countries did the Norse originate?",
+     "answers": [
+      "Denmark, Iceland and Norway",
+      "Denmark, Iceland and Norway",
+      "Denmark, Iceland and Norway",
+      "Denmark, Iceland and Norway"
+     ]
+    },
+    {
+     "id": "56ddde6b9a695914005b962b",
+     "question": "Who was the Norse leader?",
+     "answers": [
+      "Rollo",
+      "Rollo",
+      "Rollo",
+      "Rollo"
+     ]
+    },
+    {
+     "id": "56ddde6b9a695914005b962c",
+     "question": "What century did the Normans first gain their separate identity?",
+     "answers": [
+      "10th century",
+      "the first half of the 10th century",
+      "10th",
+      "10th"
+     ]
+    },
+    {
+     "id": "5ad39d53604f3c001a3fe8d1",
+     "question": "Who gave their name to Normandy in the 1000's and 1100's",
+     "answers": []
+    },
+    {
+     "id": "5ad39d53604f3c001a3fe8d2",
+     "question": "What is France a region of?",
+     "answers": []
+    },
+    {
+     "id": "5ad39d53604f3c001a3fe8d3",
+     "question": "Who did King Charles III swear fealty to?",
+     "answers": []
+    },
+    {
+     "id": "5ad39d53604f3c001a3fe8d4",
+     "question": "When did the Frankish identity emerge?",
+     "answers": []
+    }
+   ]
+  },
+  {
+   "title": "Steam_engine",
+   "context": "Trevithick continued his own experiments using a trio of locomotives, concluding with the Catch Me Who Can in 1808. Only four years later, the successful twin-cylinder locomotive Salamanca by Matthew Murray was used by the edge railed rack and pinion Middleton Railway. In 1825 George Stephenson built the Locomotion for the Stockton and Darlington Railway. This was the first public steam railway in the world and then in 1829, he built The Rocket which was entered in and won the Rainhill Trials. The Liverpool and Manchester Railway opened in 1830 making exclusive use of steam power for both passenger and freight trains.",
+   "qas": [
+    {
+     "id": "571153422419e3140095557d",
+     "question": "What was the name of the locomotive that debuted in 1808?",
+     "answers": [
+      "Catch Me Who Can",
+      "Catch Me Who Can",
+      "Catch Me Who Can"
+     ]
+    },
+    {
+     "id": "571153422419e3140095557e",
+     "question": "Who designed Salamanca?",
+     "answers": [
+      "Matthew Murray",
+      "Matthew Murray",
+      "Matthew Murray"
+     ]
+    },
+    {
+     "id": "571153422419e3140095557f",
+     "question": "What type of locomotive was Salamanca?",
+     "answers": [
+      "twin-cylinder",
+      "twin-cylinder",
+      "twin-cylinder"
+     ]
+    },
+    {
+     "id": "571153422419e31400955580",
+     "question": "On what railroad was Salamanca used?",
+     "answers": [
+      "Middleton Railway",
+      "Middleton Railway",
+      "Middleton Railway"
+     ]
+    },
+    {
+     "id": "571153422419e31400955581",
+     "question": "For what railroad did Stephenson build a locomotive in 1825?",
+     "answers": [
+      "Stockton and Darlington",
+      "Stockton and Darlington Railway",
+      "Stockton and Darlington Railway"
+     ]
+    },
+    {
+     "id": "5ad3d2aa604f3c001a3ff261",
+     "question": "What was the name of the locomotive that debuted in 1825?",
+     "answers": []
+    },
+    {
+     "id": "5ad3d2aa604f3c001a3ff262",
+     "question": "Who designed Salamanca?",
+     "answers": []
+    },
+    {
+     "id": "5ad3d2aa604f3c001a3ff263",
+     "question": "What type of locomotive was Darlington?",
+     "answers": []
+    },
+    {
+     "id": "5ad3d2aa604f3c001a3ff264",
+     "question": "On what railroad was Darlington used?",
+     "answers": []
+    },
+    {
+     "id": "5ad3d2aa604f3c001a3ff265",
+     "question": "For what railroad did Murray build a locomotive in 1825?",
+     "answers": []
+    }
+   ]
+  },
+  {
+   "title": "Rhine",
+   "context": "The Rhine (Romansh: Rein, German: Rhein, French: le Rhin, Dutch: Rijn) is a European river that begins in the Swiss canton of Graubünden in the southeastern Swiss Alps, forms part of the Swiss-Austrian, Swiss-Liechtenstein border, Swiss-German and then the Franco-German border, then flows through the Rhineland and eventually empties into the North Sea in the Netherlands. The biggest city on the river Rhine is Cologne, Germany with a population of more than 1,050,000 people. It is the second-longest river in Central and Western Europe (after the Danube), at about 1,230 km (760 mi),[note 2][note 1] with an average discharge of about 2,900 m3/s (100,000 cu ft/s).",
+   "qas": [
+    {
+     "id": "572f5533a23a5019007fc55c",
+     "question": "Where does the Rhine empty?",
+     "answers": [
+      "North Sea",
+      "the North Sea in the Netherlands",
+      "North Sea",
+      "North Sea"
+     ]
+    },
+    {
+     "id": "572f5533a23a5019007fc55d",
+     "question": "What is the largest city the Rhine runs through? ",
+     "answers": [
+      "Cologne, Germany",
+      "Cologne, Germany",
+      "Cologne"
+     ]
+    },
+    {
+     "id": "572f5533a23a5019007fc55e",
+     "question": "What river is larger than the Rhine?",
+     "answers": [
+      "Danube",
+      "the Danube",
+      "Danube",
+      "Danube"
+     ]
+    },
+    {
+     "id": "572f5533a23a5019007fc55f",
+     "question": "How long is the Rhine?",
+     "answers": [
+      "1,230 km (760 mi)",
+      "1,230 km (760 mi)",
+      "1,230 km",
+      "1,230 km"
+     ]
+    },
+    {
+     "id": "572fe1d404bcaa1900d76e37",
+     "question": "Where is the Rhine? ",
+     "answers": [
+      "Europe",
+      "Central and Western Europe",
+      "Germany",
+      "Germany"
+     ]
+    },
+    {
+     "id": "572fe1d404bcaa1900d76e3a",
+     "question": "What country does the Rhine empty?",
+     "answers": [
+      "Netherlands",
+      "Germany",
+      "Netherlands",
+      "Netherlands"
+     ]
+    },
+    {
+     "id": "572fe1d404bcaa1900d76e3b",
+     "question": "How long is the Rhine? ",
+     "answers": [
+      "1,230 km",
+      "1,230 km (760 mi)",
+      "1,230 km",
+      "1,230 km"
+     ]
+    },
+    {
+     "id": "5ad25e17d7d075001a428f12",
+     "question": "What is the smallest nation that the Rhine runs through?",
+     "answers": []
+    },
+    {
+     "id": "5ad25e17d7d075001a428f13",
+     "question": "How long is the Netherlands?",
+     "answers": []
+    },
+    {
+     "id": "5ad25e17d7d075001a428f14",
+     "question": "In what country does the Danube empty?",
+     "answers": []
+    },
+    {
+     "id": "5ad25e17d7d075001a428f15",
+     "question": "What is the population of the Netherlands?",
+     "answers": []
+    },
+    {
+     "id": "5ad25e17d7d075001a428f16",
+     "question": "How long is the Germany?",
+     "answers": []
+    }
+   ]
+  }
+ ]
+}

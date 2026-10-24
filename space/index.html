@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SystemOne Extract Index</title>
+<meta name="description" content="Leaderboard for one-pass typed extraction models: a model reads a document and a map of typed fields and returns a typed value or null per field, in one forward pass with no generated tokens.">
+<meta name="color-scheme" content="light dark">
+<meta property="og:type" content="website">
+<meta property="og:title" content="SystemOne Extract Index">
+<meta property="og:description" content="Leaderboard for one-pass typed extraction models, scored on a frozen public suite.">
+<meta property="og:url" content="https://huggingface.co/spaces/balys/extract-index">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<a class="skip" href="#leaderboard">Skip to the leaderboard</a>
+
+<header class="top">
+  <div class="wrap top-row">
+    <a class="brand" href="#top">Extract Index</a>
+    <nav class="topnav" aria-label="Page sections">
+      <a href="#leaderboard">Leaderboard</a>
+      <a href="#how">How it works</a>
+      <a href="#tests">Tests</a>
+      <a href="#scoring">Scoring</a>
+      <a href="#rules">Rules</a>
+      <a href="#submit">Submit</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap" id="top">
+
+  <section class="intro">
+    <h1>SystemOne Extract Index <span class="edition">Edition <span data-edition>0.1</span></span></h1>
+    <p class="lede">A benchmark for one-pass extraction models. The model reads a document (<code>state</code>) and a map of typed fields (text, number, date, time, datetime, duration, list) and returns a typed value or <code>null</code> for each field, in one forward pass, with no generated tokens. The suite is frozen and public, the scorer is deterministic, and every listed run publishes its results.</p>
+    <p class="facts" data-facts></p>
+    <p class="intro-links">
+      <a href="https://github.com/balys/extract-index" rel="noopener">Code on GitHub</a>
+      <a href="https://huggingface.co/datasets/balys/extract-index-suite" rel="noopener">Suite dataset</a>
+      <a href="#submit">How to submit</a>
+    </p>
+  </section>
+
+  <section class="section" id="leaderboard" aria-labelledby="h-leaderboard">
+    <div class="section-head">
+      <h2 id="h-leaderboard">Leaderboard</h2>
+      <p data-board-meta></p>
+    </div>
+    <div class="card" id="board" aria-live="polite" aria-busy="true">
+      <p class="loading">Loading <code>data/board.json</code></p>
+    </div>
+    <p class="legend">Index is the mean of the <span data-test-count>7</span> test scores, 0 to 100. Area columns are means of their tests. Latency is the median wall time per request, one request at a time. Open a row for per-test and per-type scores, null calibration, hardware and links. System Two rows (generating models) are reference points and are not ranked.</p>
+  </section>
+
+  <section class="section how" id="how" aria-labelledby="h-how">
+    <div class="section-head">
+      <h2 id="h-how">How it works</h2>
+      <p>One request per document. One score per field.</p>
+    </div>
+    <div class="card pad">
+      <div id="diagram" class="diagram"></div>
+      <div class="json-grid">
+        <div>
+          <h4>Request</h4>
+          <p class="hint">The same field specs as Cloudflare's Clairic, so engines stay thin.</p>
+<pre class="code"><code data-json>{
+  "state": "Invoice INV-2291 from Northwind Supply, issued 2026-09-02, net 30. ...",
+  "fields": {
+    "invoice_number": {"type": "text"},
+    "due_date": {"type": "date", "instructions": "Issue date plus the net payment days"},
+    "total": {"type": "number", "decimals": 2, "unit": "USD", "instructions": "Amount due including shipping"},
+    "contacts": {"type": "list", "items": "text"},
+    "po_number": {"type": "text", "instructions": "Purchase order number"}
+  },
+  "reference_date": "2026-09-02"
+}</code></pre>
+        </div>
+        <div>
+          <h4>Answer</h4>
+          <p class="hint">Every requested field is present. <code>p_null</code>, <code>confidence</code> and <code>span</code> are optional and never affect the Index.</p>
+<pre class="code"><code data-json>{"answers": {
+  "invoice_number": {"type": "text", "value": "INV-2291", "span": [8, 16], "p_null": 0.0, "confidence": 1.0},
+  "total": {"type": "number", "value": 1080, "confidence": 0.99},
+  "contacts": {"type": "list", "value": ["Dana Ruiz", "Priya Shah"]},
+  "po_number": {"type": "text", "value": null, "p_null": 1.0}
+}}</code></pre>
+        </div>
+      </div>
+      <ul class="format">
+        <li>Field names match <code>^[A-Za-z_][A-Za-z0-9_.\-]{0,63}$</code>. Per-field settings: <code>instructions</code>, <code>unit</code> (durations: seconds to years), <code>integer</code>, <code>decimals</code> (0 to 6), <code>items</code> for lists (<code>text</code>, <code>number</code> or <code>date</code>). <code>reference_date</code> is optional.</li>
+        <li>Value forms: <code>text</code> a string; <code>number</code> and <code>duration</code> a number (durations in the field's unit); <code>date</code> <code>YYYY-MM-DD</code>; <code>time</code> <code>HH:MM</code> or <code>HH:MM:SS</code>; <code>datetime</code> <code>YYYY-MM-DDTHH:MM[:SS]</code> with no zone; <code>list</code> an array, <code>[]</code> or <code>null</code> when nothing matches.</li>
+        <li><code>value</code> is <code>null</code> when the document does not determine the field. About half of the fields in some tests are null, so saying nothing at the right time counts as much as reading the right span.</li>
+        <li>An engine may declare limits (context length, field count) and answer <code>unsupported</code> instead of truncating. Those fields score 0.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section" id="tests" aria-labelledby="h-tests">
+    <div class="section-head">
+      <h2 id="h-tests">Tests</h2>
+      <p data-tests-meta></p>
+    </div>
+    <div id="tests-body"></div>
+  </section>
+
+  <section class="section" id="scoring" aria-labelledby="h-scoring">
+    <div class="section-head">
+      <h2 id="h-scoring">Scoring</h2>
+      <p>Per field, a score in 0 to 1. The rule depends on the field type.</p>
+    </div>
+    <div class="card pad">
+      <dl class="rules">
+        <div class="rule"><dt>Unanswered</dt><dd>Request <code>unsupported</code> or <code>error</code>, field missing, or wrong value form: 0.</dd></div>
+        <div class="rule"><dt>Gold null</dt><dd>1 if the answer is <code>null</code> (or <code>[]</code> for a list), else 0.</dd></div>
+        <div class="rule"><dt>Gold non-null, answer null</dt><dd>0.</dd></div>
+        <div class="rule"><dt><code>text</code></dt><dd>SQuAD token F1 against the gold value and each listed alternative; the best one counts. Tokens are lowercased, punctuation and the articles a, an, the are removed, whitespace is collapsed.</dd></div>
+        <div class="rule"><dt><code>number</code>, <code>duration</code></dt><dd>The answer is parsed (numeric strings allowed; <code>,</code> thousands separators, <code>%</code> and currency symbols stripped). 1 when |a − g| ≤ 0.5 × 10<sup>−d</sup> + 1e-9 for a field with <code>decimals</code> d; without <code>decimals</code>, when |a − g| ≤ 1e-6 × max(1, |g|). Else 0.</dd></div>
+        <div class="rule"><dt><code>date</code>, <code>time</code>, <code>datetime</code></dt><dd><code>date</code>: exact <code>YYYY-MM-DD</code>. <code>time</code>: exact to the minute; seconds are compared only when gold has them. <code>datetime</code>: exact to the minute. Common unambiguous forms (ISO with <code>T</code> or a space, a trailing <code>Z</code> or offset dropped) are normalised first.</dd></div>
+        <div class="rule"><dt><code>list</code></dt><dd>Multiset F1 between answer items and gold items. Each item is matched with its item type's rule; text items match at token F1 ≥ 0.5 and count 1. Both empty: 1.</dd></div>
+        <div class="rule"><dt>Per test</dt><dd>Mean field score over the test's fields (micro), × 100.</dd></div>
+        <div class="rule"><dt>Index</dt><dd>Mean of the <span data-test-count>7</span> test scores. <code>null</code> until every test is present.</dd></div>
+        <div class="rule"><dt>Also reported</dt><dd>Per area (mean of its tests), per field type (micro over the suite), null precision and recall, Brier score over fields that report <code>p_null</code>, and latency (median, mean, p80 of request wall time). A run is complete only when every suite row has a result with status <code>ok</code> or <code>unsupported</code>.</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="section" id="rules" aria-labelledby="h-rules">
+    <div class="section-head">
+      <h2 id="h-rules">Rules and submissions</h2>
+      <p>Submissions are pull requests. Every listed run is public.</p>
+    </div>
+    <div class="two">
+      <div class="card pad">
+        <h3>Rules</h3>
+        <ul class="plain">
+          <li>No truncation. One configuration for every test; no per-test prompt tuning.</li>
+          <li>Do not train on the suite's rows or on the <code>docs</code> generator's templates. The generator is public; Turion AI's own models are trained on a separate one.</li>
+          <li>A System One listing reads the input in a single pass per field group and generates no tokens. System Two (generating) models may be shown as reference rows; they are not ranked.</li>
+          <li>Declared limits are allowed. The engine answers <code>unsupported</code> for inputs it cannot take, and those fields score 0.</li>
+          <li>Open-weights entries are re-run by the maintainers on one NVIDIA RTX PRO 6000 to confirm scores and latency.</li>
+          <li>The maintainers (Turion AI) also submit their own models. All code, the suite and every run's results are public, so anyone can check them.</li>
+        </ul>
+      </div>
+      <div class="card pad" id="submit">
+        <h3>Submit a run</h3>
+        <ol class="steps">
+          <li>Install the kit and fetch the frozen suite.
+<pre class="code"><code>git clone https://github.com/balys/extract-index
+cd extract-index &amp;&amp; pip install -e ".[hub]"
+python -m extract_index suite download</code></pre></li>
+          <li>Run the whole suite with your engine (<code>http</code> for the request format above, <code>clairic</code>, or your own <code>module:Class</code>) and score it. Requests go one at a time; a rerun resumes and retries errors.
+<pre class="code"><code>python -m extract_index pipeline --engine http \
+  --option base_url=https://your-host --compact --out runs/&lt;name&gt;</code></pre></li>
+          <li>Check <code>runs/&lt;name&gt;/scores.json</code>: <code>complete</code> must be <code>true</code> and <code>index</code> must not be <code>null</code>.</li>
+          <li>Upload the run (results, environment, scores) to a Hugging Face dataset.
+<pre class="code"><code>python -m extract_index upload --run runs/&lt;name&gt; \
+  --repo &lt;you&gt;/&lt;name&gt; --public</code></pre></li>
+          <li>Open a pull request that adds a row to <code>submissions/README.md</code> (model, weights or API, results link, engine and commit, hardware, exact options, declared limits) and an entry to <code>submissions/entries.json</code>.</li>
+          <li>The maintainers verify the results file, re-run open-weights models on the reference GPU, and regenerate this board.</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <p>Maintained by <a href="https://turion.ai" rel="noopener">Turion AI</a>. The maintainers also submit their own models to this index. All code, the suite and every run's results are public, so anyone can check the scores.</p>
+    <p class="foot-links">
+      <a href="https://github.com/balys/extract-index" rel="noopener">GitHub</a>
+      <a href="https://huggingface.co/datasets/balys/extract-index-suite" rel="noopener">Suite dataset</a>
+      <a href="https://huggingface.co/spaces/balys/extract-index" rel="noopener">This Space</a>
+      <a href="https://github.com/apolinario/decision-index" rel="noopener">Decision Index, the kit this one follows</a>
+    </p>
+    <p class="foot-meta">Edition <span data-edition>0.1</span>. Board generated <span data-generated>—</span>. The kit and this page are MIT licensed; each test keeps its source licence.</p>
+  </div>
+</footer>
+
+<script src="assets/app.js"></script>
+</body>
+</html>

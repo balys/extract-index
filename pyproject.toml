@@ -17,3 +17,7 @@ test = ["pytest"]
 
 [tool.setuptools.packages.find]
 include = ["extract_index*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["network: downloads from the Hub; runs only with EXTRACT_INDEX_NETWORK=1"]

@@ -1,0 +1,1 @@
+Four documents (table, paragraphs, questions) of the TAT-QA dev set (next-tat/TAT-QA @ c96247f5077eac447f63527fd3dcfdc58bb56d6a, tatqa_dataset_dev.json), Zhu et al. 2021, CC BY 4.0, https://nextplusplus.github.io/TAT-QA/; for the offline tatqa builder tests.

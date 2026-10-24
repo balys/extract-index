@@ -1,0 +1,686 @@
+{
+ "sections": [
+  {
+   "section_id": "history_591",
+   "passage": "When Major General Nathanael Greene took command in the South, Marion and Lieutenant Colonel Henry Lee were ordered in January 1781, to attack Georgetown but were unsuccessful. In April they took Fort Watson and in May they captured Fort Motte, and succeeded in breaking communications between the British posts in the Carolinas. On August 31, Marion rescued a small American force trapped by 500 British soldiers, under the leadership of Major C. Fraser. For this action he received the thanks of the Continental Congress. Marion commanded the right wing under General Greene at the Battle of Eutaw Springs. In January 1782, he was elected to a new State Assembly at Jacksonborough and left his troops to take up his seat. During his absence his brigade grew disheartened, particularly after a British sortie from Charleston, and there was reportedly a conspiracy to turn him over to the British. But in June of that year, he put down a Loyalist uprising on the banks of the Pee Dee River. In August he left his brigade and returned to his plantation. In 1782, the British Parliament suspended offensive operations in America, and in December 1782, the British withdrew their garrison from Charleston. The war was brought to an end by the Treaty of Paris.",
+   "qas": [
+    {
+     "query_id": "0b52e8d1-011e-4a5f-8245-cab66b613b70",
+     "question": "How many months had passed between the Georgetown attack and the capture of Fort Motte?",
+     "spans": [
+      "4",
+      "5",
+      "1",
+      "1"
+     ],
+     "types": [
+      "number",
+      "number",
+      "number",
+      "number"
+     ]
+    },
+    {
+     "query_id": "66d93de4-f5b9-4e58-aa0e-431ba2d9f820",
+     "question": "Which major general took command in the South?",
+     "spans": [
+      "Nathanael Greene",
+      "Major General Nathanael Greene",
+      "Major General Nathanael Greene",
+      "Nathanael Greene"
+     ],
+     "types": [
+      "span",
+      "span",
+      "span",
+      "span"
+     ]
+    },
+    {
+     "query_id": "85a33603-0cc6-4374-a1e5-31a614df2d0b",
+     "question": "How many years passed between Marion and Lt Colonel Henry Lee being ordered to attack Georgetown and Marion being elected to State Assembly?",
+     "spans": [
+      "1",
+      "1",
+      "1",
+      "1"
+     ],
+     "types": [
+      "number",
+      "number",
+      "number",
+      "number"
+     ]
+    },
+    {
+     "query_id": "3a3f6bb4-1c94-43fd-939b-9fd9803a2e74",
+     "question": "How many years passed between the order to attack Georgetown and British Parliament suspending offensive operations in America?",
+     "spans": [
+      "1",
+      "1",
+      "1",
+      "1"
+     ],
+     "types": [
+      "number",
+      "number",
+      "number",
+      "number"
+     ]
+    },
+    {
+     "query_id": "2e2d0fb3-a445-4c27-bd7a-d4752f1237a9",
+     "question": "Which happened first, the Treaty of Paris or the British ending offensive operations in America?",
+     "spans": [
+      "British ending offensive operations",
+      "offensive operations in America",
+      "Treaty of Paris",
+      "offensive operations in America"
+     ],
+     "types": [
+      "span",
+      "span",
+      "span",
+      "span"
+     ]
+    },
+    {
+     "query_id": "933bf2d9-2a56-4b08-b389-3f71e00ac069",
+     "question": "Which happened first, the attack on Georgetown or the Treaty of Paris?",
+     "spans": [
+      "the attack on Georgetown",
+      "attack on Georgetown",
+      "the attack on Georgetown",
+      "Georgetown"
+     ],
+     "types": [
+      "span",
+      "span",
+      "span",
+      "span"
+     ]
+    },
+    {
+     "query_id": "74a37427-db29-4761-8245-f9e2365b0cb4",
+     "question": "How many months after putting down a Loyalist uprising on the banks of the Pee Dee River did Greene return to his plantation?",
+     "spans": [
+      "2",
+      "2",
+      "2",
+      "2"
+     ],
+     "types": [
+      "number",
+      "number",
+      "number",
+      "number"
+     ]
+    },
+    {
+     "query_id": "e4bc107e-7197-4e2d-85ab-13583c7222ce",
+     "question": "How many months after the unsuccessful attack on Georgetown did the American forces take Fort Watson?",
+     "spans": [
+      "3",
+      "3",
+      "3"
+     ],
+     "types": [
+      "number",
+      "number",
+      "number"
+     ]
+    },
+    {
+     "query_id": "439cc363-a3b6-4479-9019-4bf1e9da4728",
+     "question": "How many months after Marion and Lee took Fort Watson did the capture Fort Motte?",
+     "spans": [
+      "1",
+      "1",
+      "1"
+     ],
+     "types": [
+      "number",
+      "number",
+      "number"
+     ]
+    },
+    {
+     "query_id": "3f504418-728a-4883-9227-d3a54a145289",
+     "question": "What happened first, the attack on Fort Watson, or the capture of Fort Motte?",
+     "spans": [
+      "Fort Watson",
+      "attack on Fort Watson",
+      "Fort Watson"
+     ],
+     "types": [
+      "span",
+      "span",
+      "span"
+     ]
+    },
+    {
+     "query_id": "8e8b4496-eee9-4d44-8949-3664cec9c974",
+     "question": "How many months after Marion rescued a small American force was he elected to the new State Assembly?",
+     "spans": [
+      "5",
+      "4",
+      "3"
+     ],
+     "types": [
+      "number",
+      "number",
+      "number"
+     ]
+    },
+    {
+     "query_id": "262feba3-5add-4168-b30b-53aa3f450cd4",
+     "question": "How many months after being elected to the State Assembly did Marion return to his plantation?",
+     "spans": [
+      "7",
+      "8",
+      "8"
+     ],
+     "types": [
+      "number",
+      "number",
+      "number"
+     ]
+    },
+    {
+     "query_id": "f71257df-ef5d-4d01-a4ed-2aab2dfa5dd3",
+     "question": "Which fort was captured second, Fort Watson or Fort Motte?",
+     "spans": [
+      "Fort Motte",
+      "Fort Motte"
+     ],
+     "types": [
+      "span",
+      "span"
+     ]
+    },
+    {
+     "query_id": "213b4e50-1ea4-4a06-9c67-0f943a70b22b",
+     "question": "Who tried to attack Georgetown?",
+     "spans": [
+      "Marion",
+      "Lieutenant Colonel Henry Lee",
+      "Marion",
+      "Lieutenant Colonel Henry Lee"
+     ],
+     "types": [
+      "span",
+      "span",
+      "span",
+      "span"
+     ]
+    },
+    {
+     "query_id": "4964c8d1-a61a-4c7c-a5bc-28fd8a79916a",
+     "question": "What did Marion and Lieutenant Colonel Henry Lee take in early 1781?",
+     "spans": [
+      "Fort Watson",
+      "Fort Motte",
+      "Fort Watson",
+      "Fort Motte"
+     ],
+     "types": [
+      "span",
+      "span",
+      "span",
+      "span"
+     ]
+    },
+    {
+     "query_id": "ce066f79-32d0-4b8f-95ea-59387706830c",
+     "question": "How many months after he got orders to attack Georgetown did Marion rescue a small American force?",
+     "spans": [
+      "7",
+      "8"
+     ],
+     "types": [
+      "number",
+      "number"
+     ]
+    },
+    {
+     "query_id": "89eb3b39-409c-48ee-8856-c16c1f89cc40",
+     "question": "When did Marion rescue the American force?",
+     "spans": [
+      "31 August 1781",
+      "31 August 1781"
+     ],
+     "types": [
+      "date",
+      "date"
+     ]
+    },
+    {
+     "query_id": "65af530c-9223-4723-9e1c-a971e4f3a5c2",
+     "question": "How many months passed between Marion being elected to the State Assembly and his putting down a Loyalist uprising on the banks of the Pee Dee River?",
+     "spans": [
+      "5",
+      "5"
+     ],
+     "types": [
+      "number",
+      "number"
+     ]
+    },
+    {
+     "query_id": "b0fe6f5f-9b1c-468f-b57a-7e646f489b4a",
+     "question": "How many months after putting down a Loyalist uprising on the banks of the Pee Dee River did Marion return to his plantation?",
+     "spans": [
+      "2",
+      "2"
+     ],
+     "types": [
+      "number",
+      "number"
+     ]
+    },
+    {
+     "query_id": "f32dc97e-5f00-4f4b-8bcc-faf511bb2c8b",
+     "question": "How many years after Marion and Lieutenant Colonel Henry Lee were ordered  to attack Georgetown did the British Parliament suspend offensive operations in America?",
+     "spans": [
+      "24",
+      "1"
+     ],
+     "types": [
+      "number",
+      "number"
+     ]
+    },
+    {
+     "query_id": "59b39007-fde6-4e59-9481-b57139f04fe3",
+     "question": "How many months after Marion was defeated at Georgetown did he rescue a small American force trappd by the British?",
+     "spans": [
+      "7",
+      "7"
+     ],
+     "types": [
+      "number",
+      "number"
+     ]
+    },
+    {
+     "query_id": "ce43e235-210f-4556-8670-383957b77d7d",
+     "question": "How many months after attacking Georgetown was Marion elected to a new State Assembly at Jacksonborough?",
+     "spans": [
+      "24",
+      "12"
+     ],
+     "types": [
+      "number",
+      "number"
+     ]
+    }
+   ]
+  },
+  {
+   "section_id": "history_2847",
+   "passage": "Puhl was granted free agent status in 1990, and signed with the New York Mets on December 13, 1990. He was released by the Mets during spring training on April 1, 1991, and subsequently signed by the Kansas City Royals on April 25, 1991. His final MLB game was on May 29, 1991, then was released from the Royals on June 9, 1991, ending his MLB career. His career statistics included a .280 batting average, 62 home runs, 676 runs, 435 RBIs, and 217 stolen bases. He accumulated 1,361 hits in 1,531 games. He was particularly effective in postseason play, batting .372 in 13 games over three series.",
+   "qas": [
+    {
+     "query_id": "40d8f5d6-8e5d-40be-a2bb-52a8ca5a9b0a",
+     "question": "How many months did Puhl play for the Mets?",
+     "spans": [
+      "4",
+      "4"
+     ],
+     "types": [
+      "number",
+      "number"
+     ]
+    },
+    {
+     "query_id": "614578db-a813-449a-9e69-15cd9b6fcb11",
+     "question": "How many days after Puhl was released by the Mets did he sign with the Kansas City Royals?",
+     "spans": [
+      "24",
+      "24"
+     ],
+     "types": [
+      "number",
+      "number"
+     ]
+    },
+    {
+     "query_id": "976388a0-6060-4d99-9d7e-b3b729edffc3",
+     "question": "Which team did Puhl sign with last, New York Mets or Kansas City Royals?",
+     "spans": [
+      "Kansas City Royals",
+      "Kansas City Royals"
+     ],
+     "types": [
+      "span",
+      "span"
+     ]
+    },
+    {
+     "query_id": "1705de96-9e78-42f5-82c2-2e1698036a59",
+     "question": "How many days after Puhl played his final MLB games was he released from the Royals?",
+     "spans": [
+      "11",
+      "11"
+     ],
+     "types": [
+      "number",
+      "number"
+     ]
+    },
+    {
+     "query_id": "2ae72907-c27b-401e-982d-b489a954197b",
+     "question": "Which two teams did Puhl play for?",
+     "spans": [
+      "New York Mets",
+      "Kansas City Royals",
+      "New York Mets",
+      "Kansas City Royals"
+     ],
+     "types": [
+      "span",
+      "span",
+      "span",
+      "span"
+     ]
+    },
+    {
+     "query_id": "1ba847fa-2f9d-4c27-8431-b527415885e0",
+     "question": "Did Puhl play longer with the New York Mets or Kansas City Royals?",
+     "spans": [
+      "New York Mets",
+      "New York Mets"
+     ],
+     "types": [
+      "span",
+      "span"
+     ]
+    },
+    {
+     "query_id": "4bfb8f29-a1a0-4ca8-b558-ead99551ed18",
+     "question": "How many years after being granted free agent status did Puhl retire?",
+     "spans": [
+      "1",
+      "1"
+     ],
+     "types": [
+      "number",
+      "number"
+     ]
+    },
+    {
+     "query_id": "445f9cb5-b4b9-4b83-9dac-26ae4d4956dd",
+     "question": "On what day did Puhl sign with the final team of his MLB career?",
+     "spans": [
+      "25 April 1991",
+      "25 April 1991"
+     ],
+     "types": [
+      "date",
+      "date"
+     ]
+    },
+    {
+     "query_id": "0b8c86e3-8a03-4fb5-9e97-91ed7177bac1",
+     "question": "How many runs and home runs combined did Puhl have during his career?",
+     "spans": [
+      "738",
+      "738"
+     ],
+     "types": [
+      "number",
+      "number"
+     ]
+    }
+   ]
+  },
+  {
+   "section_id": "nfl_122",
+   "passage": " Following a Saturday thrashing over the Falcons, the Cowboys returned home, donned their 1960s throwbacks again, and prepared for an NFC East rematch on Christmas Day with the Philadelphia Eagles.  In the first quarter, the 'Boys trailed early with QB Jeff Garcia completing a 25-yard TD pass to TE Matt Schobel for the only score of the period.  In the second quarter, Philadelphia's lead increased with kicker David Akers nailing a 25-yard field goal.  Dallas would get its only score of the game with QB Tony Romo completing a 14-yard TD pass to WR Terrell Owens.  Afterwards, the Eagles wrapped up the half with Akers kicking a 45-yard field goal.  In the third quarter, Philly's lead increased with Akers' 21-yard field goal for the only score of the period.  In the fourth quarter, Dallas fell with RB Correll Buckhalter's 1-yard TD run.  With the loss, the Cowboys fell to 9-6 and out of first place in the NFC East.Stats",
+   "qas": [
+    {
+     "query_id": "524415eb-084f-48b0-b890-cbe71a12c46d",
+     "question": "How many yards were each of the touchdown passes in the game?",
+     "spans": [
+      "25-yard",
+      "14-yard",
+      "25-yard",
+      "14-yard"
+     ],
+     "types": [
+      "span",
+      "span",
+      "span",
+      "span"
+     ]
+    },
+    {
+     "query_id": "3fc2e6e2-4d0f-4cb9-9084-daa21ed67084",
+     "question": "Which player kicked the longest field goal?",
+     "spans": [
+      "David Akers",
+      "David Akers"
+     ],
+     "types": [
+      "span",
+      "span"
+     ]
+    },
+    {
+     "query_id": "957c9d3d-6e67-49d8-84de-78cd08817bcc",
+     "question": "How long were each of David Akers's field goals?",
+     "spans": [
+      "25-yard",
+      "45-yard",
+      "21-yard",
+      "25-yard",
+      "45-yard",
+      "21-yard"
+     ],
+     "types": [
+      "span",
+      "span",
+      "span",
+      "span",
+      "span",
+      "span"
+     ]
+    },
+    {
+     "query_id": "8dd12719-1ed3-4b9c-9b2d-eae7565499c7",
+     "question": "How many yards difference exists between David Akers's longest and shortest field goal?",
+     "spans": [
+      "24",
+      "24"
+     ],
+     "types": [
+      "number",
+      "number"
+     ]
+    },
+    {
+     "query_id": "642915d1-04b2-4851-8adb-220e9604aba9",
+     "question": "How many yards shorter was David Akers's second field goal compared to his first one?",
+     "spans": [
+      "11"
+     ],
+     "types": [
+      "number"
+     ]
+    }
+   ]
+  },
+  {
+   "section_id": "history_23",
+   "passage": "Danish officials appealed for help to French colonists at Martinique, located 324 miles away. Two French ships arrived from there to St. John on April 23, 1734, carrying several hundred French and Swiss troops to try to take control from the rebels. With their firepower and troops, by mid-May they had restored planters' rule of the island. The French ships returned to Martinique on June 1, leaving the local militia to track down the remaining rebels, which they did over the next three months. The slave insurrection was considered ended on August 25, 1734 when Sergeant Øttingen captured the remaining maroon rebels. The loss of life and property from the insurrection caused many St. John landowners to move to St. Croix, a nearby island bought by the Danish from the French in 1733. Four ships carried planters and their families from Charlotte Amalie in August. While they found St. Croix to be a richer land, they had to have their slaves clear jungle before being able to live there readily.",
+   "qas": [
+    {
+     "query_id": "febf9177-f7a9-4397-967d-b78168d236a0",
+     "question": "When did two french ships arrive at St. John?",
+     "spans": [
+      "23 April 1734",
+      "23 April 1734",
+      "April 23, 1734",
+      "April 23, 1734",
+      "23 April 1734"
+     ],
+     "types": [
+      "date",
+      "date",
+      "span",
+      "span",
+      "date"
+     ]
+    },
+    {
+     "query_id": "22a9a719-0b42-416c-86e4-69596782c18c",
+     "question": "What month did two french ships arrive at St. John?",
+     "spans": [
+      "April",
+      "April",
+      "April",
+      "April",
+      "April"
+     ],
+     "types": [
+      "date",
+      "span",
+      "date",
+      "span",
+      "span"
+     ]
+    },
+    {
+     "query_id": "9d5b3589-d92c-46d8-8a22-0412f7d2d306",
+     "question": "When year two french ships arrive at St. John?",
+     "spans": [
+      "1734",
+      "1734",
+      "1734",
+      "1734",
+      "1734"
+     ],
+     "types": [
+      "date",
+      "date",
+      "date",
+      "span",
+      "span"
+     ]
+    },
+    {
+     "query_id": "66b85717-e254-45d7-808a-9ce2c9308ac6",
+     "question": "What day did two french ships arrive at St. John?",
+     "spans": [
+      "23 April 1734",
+      "23 April 1734",
+      "23 April",
+      "April 23",
+      "April 23"
+     ],
+     "types": [
+      "date",
+      "date",
+      "date",
+      "span",
+      "span"
+     ]
+    },
+    {
+     "query_id": "0686d1f9-4a8e-4031-b665-49d425afb777",
+     "question": "What kind of people were on the ships that arrived at St. Croix in August?",
+     "spans": [
+      "planters and their families",
+      "French and Swiss troops",
+      "planters and their families",
+      "planters and their families"
+     ],
+     "types": [
+      "span",
+      "span",
+      "span",
+      "span"
+     ]
+    },
+    {
+     "query_id": "24d4bf64-447f-49dd-8341-84ef433259ba",
+     "question": "When did the event end that caused many St. John landowners to move to St. Croix?",
+     "spans": [
+      "25 August 1734",
+      "25 August 1734",
+      "August 25, 1734",
+      "the insurrection"
+     ],
+     "types": [
+      "date",
+      "date",
+      "span",
+      "span"
+     ]
+    },
+    {
+     "query_id": "5a494432-9075-4fdd-a320-516764daa282",
+     "question": "Which happened last, restoration of planters' rule or St. John landowners moved to St. Croix?",
+     "spans": [
+      "St. John landowners moved",
+      "restored planters' rule",
+      "landowners had to move",
+      "planters' rule of the island"
+     ],
+     "types": [
+      "span",
+      "span",
+      "span",
+      "span"
+     ]
+    },
+    {
+     "query_id": "cc8f1f4e-c827-4bdb-ae2e-491a1118c0e4",
+     "question": "Who did the Swiss allied with to capture St. John from the rebels control, the French or the Dutch?",
+     "spans": [
+      "French",
+      "French",
+      "French",
+      "French"
+     ],
+     "types": [
+      "span",
+      "span",
+      "span",
+      "span"
+     ]
+    },
+    {
+     "query_id": "3841cd95-4949-4758-b7e8-bf2e0c630f06",
+     "question": "How many days after the two French ships arrived at St. John was the slave insurrection considered ended?",
+     "spans": [
+      "124",
+      "125",
+      "94",
+      "2"
+     ],
+     "types": [
+      "number",
+      "number",
+      "number",
+      "number"
+     ]
+    },
+    {
+     "query_id": "34e25253-c689-4ff9-8968-9b1cea3f67e4",
+     "question": "How many days were the French troops away from Martinique?",
+     "spans": [
+      "39",
+      "38",
+      "38"
+     ],
+     "types": [
+      "number",
+      "number",
+      "number"
+     ]
+    }
+   ]
+  }
+ ]
+}

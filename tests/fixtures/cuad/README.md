@@ -1,0 +1,1 @@
+The 41 CUAD categories and three test contracts with their annotations from CUAD v1 (theatticusproject/cuad-qa, refs/convert/parquet @ d9c4ee0250ae2eb97bdb5b50773ab14ea62d0631), The Atticus Project, Hendrycks et al. 2021, CC BY 4.0, https://www.atticusprojectai.org/cuad; for the offline cuad builder tests.

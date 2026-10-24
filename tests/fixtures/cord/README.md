@@ -1,0 +1,1 @@
+The ground_truth (gt_parse, meta, valid_line; no images) of seven receipts from CORD v2 (naver-clova-ix/cord-v2 @ 7f0115a4b758a71d6473b8d085751692da2fef98: test 0, 1, 9, 41 and validation 3, 29, 78), NAVER Clova, Park et al. 2019, CC BY 4.0, https://github.com/clovaai/cord; in the shape cord.load_source returns, for the offline cord builder tests.
