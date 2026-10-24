@@ -28,7 +28,7 @@
    "submission": "https://github.com/balys/extract-index/pull/1"
   },
   "date": "2026-10-24",
-  "notes": "Gemma 4 12B with a LoRA adapter and extraction heads: one forward pass, no generated tokens. Trained on the training splits of SQuAD 2.0, CUAD, CORD, DROP, TAT-QA and Few-NERD (the index scores their validation and test splits) and on synthetic documents from Turion AI's own generator, written without the index's docs generator, so docs is the only test outside its training domains. Run by Turion AI, one request at a time in BF16; latency is the local forward pass, with no network.",
+  "notes": "Gemma 4 12B with a LoRA adapter and extraction heads: one forward pass, no generated tokens. Trained on the training splits of SQuAD 2.0, CUAD, CORD, DROP, TAT-QA and Few-NERD (the index scores their validation and test splits) and on synthetic documents from Turion AI's own generator, written without the index's docs generator, so docs is the only test outside its training domains. Those train splits also repeat 110 suite documents word for word (82 Few-NERD, 21 CORD, 7 DROP); scored without them the index is still 75.30. Run by Turion AI, one request at a time in BF16; latency is the local forward pass, with no network.",
   "avatar": "assets/orgs/turion-ai.webp"
  },
  {
