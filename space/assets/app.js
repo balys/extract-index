@@ -5,18 +5,16 @@
 
   var BOARD_URL = 'data/board.json';
   var TYPE_ORDER = ['text', 'number', 'date', 'time', 'datetime', 'duration', 'list'];
+  var AREA_COLOURS = { Spans: '#3B7CF6', Documents: '#E8740C', Numbers: '#A855F7', Entities: '#3E8E5E' };
+  var PALETTE = ['#3B7CF6', '#E8740C', '#A855F7', '#3E8E5E', '#EF3E36', '#FFD21E'];
 
   var state = {
     board: null,
+    groups: null,
+    metric: 'index',
     sort: { key: 'index', dir: 'desc' },
     open: {}
   };
-
-  // Dev convenience: ?theme=dark|light forces a theme without touching OS settings.
-  var themeParam = new URLSearchParams(location.search).get('theme');
-  if (themeParam === 'dark' || themeParam === 'light') {
-    document.documentElement.setAttribute('data-theme', themeParam);
-  }
 
   /* ---------- helpers ---------- */
 
@@ -32,7 +30,6 @@
   function fmtScore(v) { return isNum(v) ? v.toFixed(1) : '—'; }
   function fmtInt(v) { return isNum(v) ? Math.round(v).toLocaleString('en-US') : '—'; }
   function fmtMs(v) { return isNum(v) ? Math.round(v).toLocaleString('en-US') : '—'; }
-  // Ratios may arrive as 0-1 or 0-100; show both as a percentage.
   function fmtShare(v) { return isNum(v) ? Math.round(v * 100) + '%' : '—'; }  // 0-1 shares
   function fmtPct(v) { return isNum(v) ? Math.round(v) + '%' : '—'; }  // 0-100 scores
   function fmtDate(s) {
@@ -41,11 +38,55 @@
     return m ? m[1] : String(s);
   }
   function safeUrl(u) { return (typeof u === 'string' && /^https?:\/\//i.test(u)) ? u : null; }
+  function safeRel(p) { return (typeof p === 'string' && /^(?!\.\.)(?![a-z]+:)[^\s"'<>]+$/i.test(p)) ? p : null; }
   function hostOf(u) { try { return new URL(u).hostname.replace(/^www\./, ''); } catch (e) { return u; } }
   function slug(s) { return String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''); }
-  function plural(n, word) { return n + ' ' + word + (n === 1 ? '' : 's'); }
-
+  function plural(n, word) { return fmtInt(n) + ' ' + word + (n === 1 ? '' : 's'); }
   function setText(sel, text) { $all(sel).forEach(function (el) { el.textContent = text; }); }
+  function sortDesc(get) {
+    return function (a, b) {
+      var va = get(a), vb = get(b);
+      if (va !== vb) return vb - va;
+      return a._i - b._i;
+    };
+  }
+
+  function areaColour(a) {
+    if (AREA_COLOURS[a]) return AREA_COLOURS[a];
+    var i = ((state.board && state.board.areas) || []).indexOf(a);
+    return PALETTE[(i < 0 ? 0 : i) % PALETTE.length];
+  }
+  function metricOf(e, m) {
+    if (m === 'index') return e.index;
+    return e.areas ? e.areas[m.slice(5)] : null;
+  }
+  function metricLabel(m) { return m === 'index' ? 'Index' : m.slice(5); }
+
+  function initials(e) {
+    var s = String(e.org || e.name || '?').trim();
+    var parts = s.split(/\s+/);
+    return (parts.length > 1 ? parts[0].charAt(0) + parts[1].charAt(0) : s.slice(0, 2)).toUpperCase();
+  }
+  function avatarHtml(e, cls, fallback) {
+    var src = safeRel(e.avatar);
+    cls = 'avatar' + (cls ? ' ' + cls : '');
+    if (src) return '<img class="' + cls + '" src="' + esc(src) + '" alt="" width="28" height="28" loading="lazy">';
+    if (fallback === false) return '';
+    return '<span class="' + cls + '" aria-hidden="true">' + esc(initials(e)) + '</span>';
+  }
+  function kindClass(e) {
+    if (e.system === 'two') return 'k-two';
+    if (e.system === 'baseline') return 'k-base';
+    return e.kind === 'api' ? 'k-api' : 'k-open';
+  }
+  function kindPill(e) {
+    if (e.system === 'baseline') return '<span class="pill k-base">Floor</span>';
+    var k = e.kind === 'open' ? '<span class="pill k-open">Open weights</span>'
+      : e.kind === 'api' ? '<span class="pill k-api">API</span>'
+      : e.kind ? '<span class="pill">' + esc(e.kind) + '</span>' : '';
+    if (e.system === 'two') k += '<span class="pill k-two">System Two, reference</span>';
+    return k;
+  }
 
   /* ---------- JSON examples ---------- */
 
@@ -61,8 +102,6 @@
           : '<span class="j-str">' + esc(m[1]) + '</span>';
       } else if (tok === 'null') {
         out += '<span class="j-null">null</span>';
-      } else if (tok === 'true' || tok === 'false') {
-        out += '<span class="j-num">' + tok + '</span>';
       } else {
         out += '<span class="j-num">' + esc(tok) + '</span>';
       }
@@ -71,162 +110,11 @@
     out += esc(src.slice(last));
     return out;
   }
-
   function renderJsonExamples() {
-    $all('code[data-json]').forEach(function (el) {
-      el.innerHTML = highlightJson(el.textContent);
-    });
+    $all('code[data-json]').forEach(function (el) { el.innerHTML = highlightJson(el.textContent); });
   }
 
-  /* ---------- diagram ---------- */
-
-  var ICONS = {
-    doc: '<path d="M4 2h6l3 3v9H4z"/><path d="M10 2v3h3"/><path d="M6.5 8.5h4M6.5 11h4"/>',
-    chip: '<rect x="4.5" y="4.5" width="7" height="7" rx="1.5"/><path d="M6.5 1.5v3M9.5 1.5v3M6.5 11.5v3M9.5 11.5v3M1.5 6.5h3M1.5 9.5h3M11.5 6.5h3M11.5 9.5h3"/>',
-    braces: '<path d="M6 2.5c-1.8 0-2 1-2 2.5v1.5c0 1-.6 1.5-1.5 1.5.9 0 1.5.5 1.5 1.5V11c0 1.5.2 2.5 2 2.5"/><path d="M10 2.5c1.8 0 2 1 2 2.5v1.5c0 1 .6 1.5 1.5 1.5-.9 0-1.5.5-1.5 1.5V11c0 1.5-.2 2.5-2 2.5"/>',
-    check: '<circle cx="8" cy="8" r="6"/><path d="M5.3 8.2l1.9 1.9 3.6-4.2"/>',
-    bars: '<path d="M3 13.5V8M8 13.5V3.5M13 13.5V10"/><path d="M1.5 13.5h13"/>',
-    sigma: '<path d="M12 3.5H4.5l4 4.5-4 4.5H12"/>'
-  };
-
-  function diagramNodes() {
-    var n = (state.board && state.board.tests && state.board.tests.length) || 7;
-    return [
-      { title: 'Request', icon: 'doc',
-        text: 'state (the document) and fields: a map of name to type, with optional instructions, unit, decimals.' },
-      { title: 'Model', icon: 'chip', accent: true,
-        text: 'One forward pass over state and fields. No decoding, no generated tokens.' },
-      { title: 'Answers', icon: 'braces',
-        text: 'One typed value or null per field. Optional p_null, confidence and span.' },
-      { title: 'Scorer', icon: 'check',
-        text: 'Each field against gold, with the rule for its type. A score in 0 to 1.' },
-      { title: 'Test score', icon: 'bars',
-        text: 'Mean field score × 100. One score per test.' },
-      { title: 'Index', icon: 'sigma', last: true,
-        text: 'Mean of the ' + n + ' test scores, 0 to 100.' }
-    ];
-  }
-  var GROUPS = [
-    { from: 0, to: 2, label: 'Engine under test' },
-    { from: 3, to: 5, label: 'Kit, deterministic: python -m extract_index score' }
-  ];
-
-  var measureCtx = null;
-  function textWidth(text, px, weight) {
-    if (!measureCtx) {
-      var c = document.createElement('canvas');
-      measureCtx = c.getContext('2d');
-    }
-    measureCtx.font = (weight || 400) + ' ' + px + 'px "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif';
-    return measureCtx.measureText(text).width;
-  }
-  function wrap(text, maxW, px) {
-    var words = text.split(' '), lines = [], cur = '';
-    words.forEach(function (w) {
-      var t = cur ? cur + ' ' + w : w;
-      if (cur && textWidth(t, px) > maxW) { lines.push(cur); cur = w; } else { cur = t; }
-    });
-    if (cur) lines.push(cur);
-    return lines;
-  }
-  function svgText(x, y, cls, lines, lh) {
-    return lines.map(function (l, i) {
-      return '<text class="' + cls + '" x="' + x + '" y="' + (y + i * lh) + '">' + esc(l) + '</text>';
-    }).join('');
-  }
-  function svgIcon(x, y, name, accent) {
-    return '<g class="icon' + (accent ? ' accent' : '') + '" transform="translate(' + x + ' ' + y + ')">' + ICONS[name] + '</g>';
-  }
-  function boxClass(nd) { return 'box' + (nd.accent ? ' accent' : '') + (nd.last ? ' last' : ''); }
-
-  function layoutHorizontal(nodes, W) {
-    var pad = 10, gap = 22, ggap = 40, capH = 24, bodyPx = 11.5, lh = 15;
-    var boxW = Math.floor((W - 4 * pad - ggap - 4 * gap) / 6);
-    var innerW = boxW - 20;
-    var wrapped = nodes.map(function (nd) { return wrap(nd.text, innerW, bodyPx); });
-    var maxLines = Math.max.apply(null, wrapped.map(function (l) { return l.length; }));
-    var boxH = 44 + maxLines * lh + 6;
-    var top = capH + pad, H = top + boxH + pad;
-    var xs = [], x = pad;
-    nodes.forEach(function (nd, i) {
-      xs.push(x);
-      x += boxW + (i === 2 ? pad + ggap + pad : gap);
-    });
-    var out = [];
-    GROUPS.forEach(function (g) {
-      var gx = xs[g.from] - pad, gw = xs[g.to] + boxW + pad - gx;
-      out.push('<rect class="group" x="' + gx + '" y="0" width="' + gw + '" height="' + H + '" rx="10"/>');
-      out.push('<text class="t-cap" x="' + (gx + pad + 2) + '" y="16">' + esc(g.label) + '</text>');
-    });
-    nodes.forEach(function (nd, i) {
-      var bx = xs[i];
-      out.push('<rect class="' + boxClass(nd) + '" x="' + bx + '" y="' + top + '" width="' + boxW + '" height="' + boxH + '" rx="8"/>');
-      out.push(svgIcon(bx + 10, top + 11, nd.icon, nd.accent));
-      out.push('<text class="t-title" x="' + (bx + 32) + '" y="' + (top + 24) + '">' + esc(nd.title) + '</text>');
-      out.push(svgText(bx + 10, top + 44 + 9, 't-body', wrapped[i], lh));
-      if (i < nodes.length - 1) {
-        var y = top + boxH / 2, x1 = bx + boxW + 1, x2 = xs[i + 1] - 1;
-        out.push('<path class="link" d="M' + x1 + ' ' + y + 'H' + x2 + '" marker-end="url(#diag-arrow)"/>');
-      }
-    });
-    return { body: out.join(''), W: W, H: H, cls: 'horiz' };
-  }
-
-  function layoutVertical(nodes, W) {
-    var pad = 10, gap = 30, ggap = 40, capH = 24, bodyPx = 12.5, lh = 17;
-    var boxW = W - 2 * pad, innerW = boxW - 20;
-    var out = [], y = 0, groupStart = 0;
-    var rects = [];
-    nodes.forEach(function (nd, i) {
-      var g = GROUPS[i === 0 ? 0 : (i === 3 ? 1 : -1)];
-      if (g) { groupStart = y; y += capH + pad; }
-      var lines = wrap(nd.text, innerW, bodyPx);
-      var h = 44 + lines.length * lh + 4;
-      rects.push({ x: pad, y: y, w: boxW, h: h, lines: lines });
-      y += h;
-      if (i === 2 || i === 5) {
-        var gEnd = y + pad;
-        var gi = i === 2 ? 0 : 1;
-        out.unshift('<rect class="group" x="0" y="' + groupStart + '" width="' + W + '" height="' + (gEnd - groupStart) + '" rx="10"/>' +
-          '<text class="t-cap" x="' + (pad + 2) + '" y="' + (groupStart + 16) + '">' + esc(GROUPS[gi].label) + '</text>');
-        y = gEnd + (i === 2 ? ggap : 0);
-      } else {
-        y += gap;
-      }
-    });
-    var H = y;
-    nodes.forEach(function (nd, i) {
-      var r = rects[i];
-      out.push('<rect class="' + boxClass(nd) + '" x="' + r.x + '" y="' + r.y + '" width="' + r.w + '" height="' + r.h + '" rx="8"/>');
-      out.push(svgIcon(r.x + 10, r.y + 11, nd.icon, nd.accent));
-      out.push('<text class="t-title" x="' + (r.x + 32) + '" y="' + (r.y + 24) + '">' + esc(nd.title) + '</text>');
-      out.push(svgText(r.x + 10, r.y + 44 + 9, 't-body', r.lines, lh));
-      if (i < nodes.length - 1) {
-        var cx = r.x + 24, y1 = r.y + r.h + 1, y2 = rects[i + 1].y - 1;
-        out.push('<path class="link" d="M' + cx + ' ' + y1 + 'V' + y2 + '" marker-end="url(#diag-arrow)"/>');
-      }
-    });
-    return { body: out.join(''), W: W, H: H, cls: 'vert' };
-  }
-
-  var lastDiagramWidth = 0;
-  function renderDiagram(force) {
-    var host = $('#diagram');
-    if (!host) return;
-    var W = host.clientWidth;
-    if (!W || (!force && W === lastDiagramWidth)) return;
-    lastDiagramWidth = W;
-    var nodes = diagramNodes();
-    var lay = W >= 860 ? layoutHorizontal(nodes, W) : layoutVertical(nodes, Math.min(W, 560));
-    host.innerHTML =
-      '<svg class="diag ' + lay.cls + '" width="' + lay.W + '" height="' + lay.H + '" viewBox="0 0 ' + lay.W + ' ' + lay.H + '" role="img" aria-labelledby="diag-title diag-desc">' +
-      '<title id="diag-title">How a run is scored</title>' +
-      '<desc id="diag-desc">A request with state and typed field specs goes to the model, which makes one pass and returns a typed value or null per field. The scorer compares each field with gold, each test gets the mean field score times 100, and the Index is the mean of the test scores.</desc>' +
-      '<defs><marker id="diag-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="arrow" d="M1 1.5L8.5 5 1 8.5z"/></marker></defs>' +
-      lay.body + '</svg>';
-  }
-
-  /* ---------- leaderboard ---------- */
+  /* ---------- entries ---------- */
 
   function prepareEntries(board) {
     var entries = (board.entries || []).map(function (e, i) {
@@ -239,16 +127,325 @@
     entries.forEach(function (e) {
       if (seen[e._id]) { seen[e._id] += 1; e._id += '-' + seen[e._id]; } else { seen[e._id] = 1; }
     });
-    var one = entries.filter(function (e) { return e.system !== 'two'; });
+    var one = entries.filter(function (e) { return e.system !== 'two' && e.system !== 'baseline'; });
     var two = entries.filter(function (e) { return e.system === 'two'; });
-    var ranked = one.filter(function (e) { return isNum(e.index); }).sort(function (a, b) { return b.index - a.index; });
+    var base = entries.filter(function (e) { return e.system === 'baseline'; });
+    var ranked = one.filter(function (e) { return isNum(e.index); }).sort(sortDesc(function (e) { return e.index; }));
     var rank = 0;
     ranked.forEach(function (e, i) {
       if (i === 0 || e.index < ranked[i - 1].index) rank = i + 1;
       e._rank = rank;
     });
-    return { one: one, two: two, all: entries };
+    return { one: one, two: two, base: base, floor: base[0] || null, ranked: ranked, all: entries };
   }
+
+  /* ---------- legend and switch ---------- */
+
+  function renderLegend() {
+    var g = state.groups, items = [];
+    items.push('<span><i></i>Open weights</span>');
+    items.push('<span><i class="hatch"></i>API</span>');
+    if (g.two.length) items.push('<span><i class="ref"></i>System Two, reference</span>');
+    if (g.floor) {
+      var fv = metricOf(g.floor, state.metric);
+      items.push('<span><i class="floor"></i>Floor' + (isNum(fv) ? ' ' + fv.toFixed(1) : '') + ': answer null everywhere</span>');
+    }
+    $('[data-legend]').innerHTML = items.join('');
+  }
+
+  function renderSwitch() {
+    var areas = state.board.areas || [];
+    var opts = [{ key: 'index', label: 'Index' }].concat(areas.map(function (a) {
+      return { key: 'area:' + a, label: a, c: areaColour(a) };
+    }));
+    $('[data-switch]').innerHTML = opts.map(function (o) {
+      return '<button type="button" data-metric="' + esc(o.key) + '" aria-pressed="' + (state.metric === o.key) + '"' +
+        (o.c ? ' style="--c:' + o.c + '"' : '') + '>' + (o.c ? '<i aria-hidden="true"></i>' : '') + esc(o.label) + '</button>';
+    }).join('');
+  }
+
+  /* ---------- ranking chart ---------- */
+
+  function renderRanking() {
+    var host = $('#ranking'), g = state.groups, m = state.metric;
+    host.setAttribute('aria-busy', 'false');
+    if (!g.all.length) {
+      host.innerHTML = '<div class="empty"><h3>No runs yet</h3><p>Scored runs appear here once they are merged. To add yours, see <a href="#submit">Submit a run</a>.</p></div>';
+      return;
+    }
+    var colour = m === 'index' ? null : areaColour(m.slice(5));
+    var get = function (e) { return metricOf(e, m); };
+    var ones = g.one.filter(function (e) { return isNum(get(e)); }).sort(sortDesc(get));
+    var twos = g.two.filter(function (e) { return isNum(get(e)); }).sort(sortDesc(get));
+    var incomplete = g.one.length - ones.length;
+    var floorV = g.floor ? get(g.floor) : null;
+    var ranks = {}, r = 0;
+    ones.forEach(function (e, i) {
+      if (i === 0 || get(e) < get(ones[i - 1])) r = i + 1;
+      ranks[e._id] = r;
+    });
+
+    var n = ones.length + twos.length;
+    var avail = Math.max(240, host.clientWidth - 42 - 24 - (twos.length ? 32 : 0));
+    var slot = Math.max(64, Math.min(110, Math.floor((avail - Math.max(0, n - 1) * 10) / Math.max(n, 1))));
+
+    function col(e, isTwo) {
+      var v = get(e), h = clamp(v);
+      var cls = 'rk-bar ' + (isTwo ? 'k-two' : (colour ? 'k-area' : kindClass(e)));
+      var style = 'height:' + h + '%' + (colour ? ';--c:' + colour : '');
+      var rankHtml = isTwo ? '<span class="rk-rank ref">ref</span>' : '<span class="rk-rank">#' + ranks[e._id] + '</span>';
+      return '<div class="rk-col">' + rankHtml + '<span class="rk-val">' + v.toFixed(1) + '</span>' +
+        '<button type="button" class="' + cls + '" style="' + style + '" data-id="' + e._id + '" data-tip-id="' + e._id + '"' +
+        ' aria-label="' + esc(e.name) + ', ' + metricLabel(m) + ' ' + v.toFixed(1) + '. Open the row in the table">' +
+        (h >= 16 ? avatarHtml(e) : '') + '</button></div>';
+    }
+    function label(e) {
+      return '<div><b>' + esc(e.name || 'Unnamed') + '</b><span class="org">' + esc(e.org || '') + '</span></div>';
+    }
+    var bars = ones.map(function (e) { return col(e, false); });
+    var labels = ones.map(label);
+    if (twos.length) {
+      bars.push('<div class="rk-col gap" aria-hidden="true"></div>');
+      labels.push('<div class="gap" aria-hidden="true"></div>');
+      bars = bars.concat(twos.map(function (e) { return col(e, true); }));
+      labels = labels.concat(twos.map(label));
+    }
+    var grid = [20, 40, 60, 80, 100].map(function (v) { return '<div class="rk-grid" style="bottom:' + v + '%"></div>'; }).join('');
+    var ys = [0, 20, 40, 60, 80, 100].filter(function (v) { return !isNum(floorV) || Math.abs(v - floorV) > 7; })
+      .map(function (v) { return '<span style="bottom:' + v + '%">' + v + '</span>'; }).join('');
+    var floor = '';
+    if (isNum(floorV)) {
+      ys += '<span class="floor" style="bottom:' + clamp(floorV) + '%" title="Floor: answer null everywhere">' + floorV.toFixed(1) + '</span>';
+      floor = '<div class="rk-floor" style="bottom:' + clamp(floorV) + '%"></div>';
+    }
+    var note = '';
+    if (n < 4) {
+      note = '<div class="rk-note" style="--n:' + n + '">' +
+        (n ? plural(n, 'listed run') + ' so far.' : 'No complete runs yet.') +
+        ' Runs are added by pull request; <a href="#submit">submit yours</a>.</div>';
+    }
+    var incompleteNote = incomplete
+      ? '<p class="rk-incomplete">' + plural(incomplete, 'incomplete run') + ' without ' + (m === 'index' ? 'an' : 'a') + ' ' + esc(metricLabel(m)) + ' score: see the table.</p>'
+      : '';
+    host.innerHTML =
+      '<div class="rk" style="--slot:' + slot + 'px" role="group" aria-label="Ranking by ' + esc(metricLabel(m)) + '">' +
+        '<div class="rk-y" aria-hidden="true">' + ys + '</div>' +
+        '<div class="rk-scroll"><div class="rk-inner">' +
+          '<div class="rk-plot">' + grid + floor + note + '<div class="rk-bars">' + bars.join('') + '</div></div>' +
+          '<div class="rk-labels">' + labels.join('') + '</div>' +
+        '</div></div>' +
+      '</div>' + incompleteNote;
+  }
+
+  /* ---------- by area ---------- */
+
+  function renderAreas() {
+    var host = $('[data-area-chart]'), g = state.groups, board = state.board;
+    var areas = board.areas || [], tests = board.tests || [];
+    if (!areas.length || !g.all.length) { host.innerHTML = '<p class="empty">No runs yet.</p>'; return; }
+    var cols = areas.map(function (a) {
+      var c = areaColour(a);
+      var nTests = tests.filter(function (t) { return t.area === a; }).length;
+      var rows = g.one.concat(g.two).filter(function (e) { return e.areas && isNum(e.areas[a]); })
+        .sort(sortDesc(function (e) { return e.areas[a]; }));
+      var floorV = g.floor && g.floor.areas ? g.floor.areas[a] : null;
+      var items = rows.map(function (e) {
+        var v = e.areas[a];
+        return '<li class="hb' + (e.system === 'two' ? ' two' : '') + '">' +
+          '<span class="hb-name">' + avatarHtml(e, 'sm', false) + '<span>' + esc(e.name) + '</span>' +
+          (e.system === 'two' ? '<small>ref</small>' : '') + '</span>' +
+          '<span class="hb-track" data-tip-id="' + e._id + '" data-tip-extra="' + esc(a) + ': ' + v.toFixed(1) + '"><i style="width:' + clamp(v) + '%"></i>' +
+          (isNum(floorV) ? '<u style="left:' + clamp(floorV) + '%"></u>' : '') + '</span>' +
+          '<span class="hb-val">' + v.toFixed(1) + '</span></li>';
+      }).join('') || '<li class="hb na"><span class="hb-name muted">No complete runs</span></li>';
+      return '<div class="area-col" style="--c:' + c + '"><h4><i aria-hidden="true"></i>' + esc(a) +
+        '<small>' + plural(nTests, 'test') + (isNum(floorV) ? ', floor ' + floorV.toFixed(1) : '') + '</small></h4><ol>' + items + '</ol></div>';
+    });
+    host.innerHTML = '<div class="scroll"><div class="areas">' + cols.join('') + '</div></div>';
+  }
+
+  /* ---------- field types ---------- */
+
+  var HATCH_DEF = '<defs><pattern id="hatch-svg" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">' +
+    '<rect width="6" height="6" fill="#FBF8F1"/><rect width="3" height="6" fill="#FFD21E"/></pattern></defs>';
+
+  function dotClass(e) {
+    return 'dot' + (e.system === 'two' ? ' two' : (e.kind === 'api' ? ' api' : ''));
+  }
+
+  function renderTypes() {
+    var host = $('[data-types-chart]'), g = state.groups;
+    var entries = g.two.concat(g.one.slice().reverse()).filter(function (e) { return e.types; });
+    var keys = {};
+    entries.concat(g.floor ? [g.floor] : []).forEach(function (e) {
+      Object.keys(e.types || {}).forEach(function (t) { if (isNum(e.types[t])) keys[t] = true; });
+    });
+    var types = TYPE_ORDER.filter(function (t) { return keys[t]; })
+      .concat(Object.keys(keys).filter(function (t) { return TYPE_ORDER.indexOf(t) < 0; }).sort());
+    if (!types.length) { host.innerHTML = '<p class="empty">Not reported yet.</p>'; return; }
+
+    var W = Math.max(300, host.clientWidth || 480), left = 78, right = 18, top = 24, rowH = 30, H = top + types.length * rowH + 6;
+    var x = function (v) { return left + (W - left - right) * clamp(v) / 100; };
+    var parts = [HATCH_DEF];
+    [0, 25, 50, 75, 100].forEach(function (v) {
+      parts.push('<line class="ax" x1="' + x(v) + '" y1="' + (top - 4) + '" x2="' + x(v) + '" y2="' + (H - 6) + '"/>');
+      parts.push('<text class="tick" x="' + x(v) + '" y="' + (top - 10) + '" text-anchor="middle">' + v + '</text>');
+    });
+    var top1 = g.ranked[0];
+    types.forEach(function (t, i) {
+      var cy = top + i * rowH + rowH / 2;
+      parts.push('<text class="rowlab" x="' + (left - 10) + '" y="' + (cy + 4) + '" text-anchor="end">' + esc(t) + '</text>');
+      parts.push('<line x1="' + left + '" y1="' + cy + '" x2="' + x(100) + '" y2="' + cy + '" stroke="#D8D3C8" stroke-width="1.5"/>');
+      var fv = g.floor && g.floor.types ? g.floor.types[t] : null;
+      if (isNum(fv)) {
+        parts.push('<line class="floor-line" x1="' + x(fv) + '" y1="' + (cy - 9) + '" x2="' + x(fv) + '" y2="' + (cy + 9) + '"><title>floor: ' + fv.toFixed(1) + '</title></line>');
+      }
+      entries.forEach(function (e) {
+        var v = e.types[t];
+        if (!isNum(v)) return;
+        parts.push('<circle class="' + dotClass(e) + '" cx="' + x(v) + '" cy="' + cy + '" r="6.5" tabindex="0" data-tip-id="' + e._id + '" data-tip-extra="' + esc(t) + ': ' + v.toFixed(1) + '">' +
+          '<title>' + esc(e.name) + ', ' + esc(t) + ': ' + v.toFixed(1) + '</title></circle>');
+      });
+      if (top1 && top1.types && isNum(top1.types[t])) {
+        parts.push('<text class="dlab" x="' + x(top1.types[t]) + '" y="' + (cy - 10) + '" text-anchor="middle">' + top1.types[t].toFixed(1) + '</text>');
+      }
+    });
+    host.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Per field type scores, one dot per run' +
+      (top1 ? '; labelled values are ' + esc(top1.name) : '') + '">' + parts.join('') + '</svg>';
+  }
+
+  /* ---------- latency vs index ---------- */
+
+  function renderLatency() {
+    var host = $('[data-latency-chart]'), g = state.groups;
+    var pts = g.one.concat(g.two).filter(function (e) {
+      return isNum(e.index) && e.latency_ms && isNum(e.latency_ms.median) && e.latency_ms.median > 0;
+    });
+    var W = Math.max(300, host.clientWidth || 480), H = Math.max(230, Math.round(W * 0.62)), left = 36, right = 18, top = 16, bottom = 42;
+    var lats = pts.map(function (p) { return p.latency_ms.median; });
+    var minLat = lats.some(function (v) { return v < 10; }) ? 1 : 10;
+    var maxLat = Math.max(10000, Math.max.apply(null, lats.concat([0])) * 1.8);
+    var lmin = Math.log10(minLat), lmax = Math.log10(maxLat);
+    var x = function (v) { return left + (W - left - right) * (Math.log10(v) - lmin) / (lmax - lmin); };
+    var y = function (v) { return top + (H - top - bottom) * (1 - clamp(v) / 100); };
+    var parts = [HATCH_DEF];
+    [0, 20, 40, 60, 80, 100].forEach(function (v) {
+      parts.push('<line class="ax" x1="' + left + '" y1="' + y(v) + '" x2="' + (W - right) + '" y2="' + y(v) + '"/>');
+      parts.push('<text class="tick" x="' + (left - 6) + '" y="' + (y(v) + 3.5) + '" text-anchor="end">' + v + '</text>');
+    });
+    for (var p = Math.ceil(lmin); p <= Math.floor(lmax); p++) {
+      var v = Math.pow(10, p);
+      var lab = v >= 1000 ? (v / 1000) + ' s' : v + ' ms';
+      parts.push('<line class="ax" x1="' + x(v) + '" y1="' + top + '" x2="' + x(v) + '" y2="' + y(0) + '"/>');
+      parts.push('<text class="tick" x="' + x(v) + '" y="' + (y(0) + 16) + '" text-anchor="middle">' + lab + '</text>');
+    }
+    parts.push('<line class="ax-base" x1="' + left + '" y1="' + y(0) + '" x2="' + (W - right) + '" y2="' + y(0) + '"/>');
+    parts.push('<text class="tick lab" x="' + (W - right) + '" y="' + (H - 4) + '" text-anchor="end">median latency per request, log scale</text>');
+    parts.push('<text class="tick lab" transform="translate(10 ' + y(50) + ') rotate(-90)" text-anchor="middle">Index</text>');
+    if (g.floor && isNum(g.floor.index)) {
+      parts.push('<line class="floor-line" x1="' + left + '" y1="' + y(g.floor.index) + '" x2="' + (W - right) + '" y2="' + y(g.floor.index) + '"/>');
+      parts.push('<text class="floor-lab" x="' + (W - right) + '" y="' + (y(g.floor.index) - 5) + '" text-anchor="end">floor ' + g.floor.index.toFixed(1) + '</text>');
+    }
+    if (!pts.length) {
+      parts.push('<text class="dlab soft" x="' + ((left + W - right) / 2) + '" y="' + y(55) + '" text-anchor="middle">No timed runs yet</text>');
+    }
+    var labelled = pts.length <= 8 ? pts.slice() : pts.slice().sort(sortDesc(function (e) { return e.index; })).slice(0, 5);
+    var useAvatars = pts.length <= 10;
+    // Nudge labels apart vertically so a cluster of points stays readable.
+    var labelY = {};
+    labelled.sort(function (a, b) { return y(a.index) - y(b.index) || x(a.latency_ms.median) - x(b.latency_ms.median); });
+    var prev = -Infinity;
+    labelled.forEach(function (e) {
+      var ly = Math.max(y(e.index), prev + 13);
+      labelY[e._id] = ly;
+      prev = ly;
+    });
+    pts.forEach(function (e, i) {
+      var cx = x(e.latency_ms.median), cy = y(e.index);
+      var src = useAvatars ? safeRel(e.avatar) : null;
+      var tip = ' data-tip-id="' + e._id + '" data-tip-extra="median ' + fmtMs(e.latency_ms.median) + ' ms"';
+      var title = '<title>' + esc(e.name) + ': Index ' + e.index.toFixed(1) + ', median ' + fmtMs(e.latency_ms.median) + ' ms</title>';
+      if (src) {
+        parts.push('<clipPath id="pt-clip-' + i + '"><circle cx="' + cx + '" cy="' + cy + '" r="10"/></clipPath>' +
+          '<circle cx="' + cx + '" cy="' + cy + '" r="11.5" fill="#fff" stroke="#232323" stroke-width="1.5"/>' +
+          '<image href="' + esc(src) + '" x="' + (cx - 10) + '" y="' + (cy - 10) + '" width="20" height="20" clip-path="url(#pt-clip-' + i + ')" preserveAspectRatio="xMidYMid slice"/>' +
+          '<circle cx="' + cx + '" cy="' + cy + '" r="11.5" fill="transparent" stroke="none" tabindex="0"' + tip + '>' + title + '</circle>');
+      } else {
+        parts.push('<circle class="' + dotClass(e) + '" cx="' + cx + '" cy="' + cy + '" r="7" tabindex="0"' + tip + '>' + title + '</circle>');
+      }
+      if (labelled.indexOf(e) >= 0) {
+        var name = String(e.name || '');
+        if (name.length > 24) name = name.slice(0, 23) + '…';
+        var anchor = cx > W - right - 150 ? 'end' : 'start';
+        var ly = labelY[e._id], gap = src ? 15 : 11;
+        var lx = anchor === 'start' ? cx + gap : cx - gap;
+        if (ly - cy > 6) {
+          parts.push('<line x1="' + (anchor === 'start' ? cx + gap - 4 : cx - gap + 4) + '" y1="' + cy + '" x2="' + lx + '" y2="' + ly + '" stroke="#8C8C8C" stroke-width="1"/>');
+        }
+        parts.push('<text class="dlab' + (e.system === 'two' ? ' soft' : '') + '" x="' + lx + '" y="' + (ly + 4) + '" text-anchor="' + anchor + '">' + esc(name) + '</text>');
+      }
+    });
+    host.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Median latency against Index, one point per run">' + parts.join('') + '</svg>';
+    if (g.floor) {
+      var note = $('[data-latency-note]');
+      if (note && note.textContent.indexOf('null baseline') < 0) note.textContent += ' The null baseline has no latency; it is the dashed floor line.';
+    }
+  }
+
+  /* ---------- tooltip ---------- */
+
+  function entryById(id) {
+    var all = state.groups ? state.groups.all : [];
+    for (var i = 0; i < all.length; i++) if (all[i]._id === id) return all[i];
+    return null;
+  }
+  function tipHtml(e, extra) {
+    var areas = state.board.areas || [];
+    var rows = [];
+    rows.push('<div class="tiprow"><span>Index</span><b>' + fmtScore(e.index) + (isNum(e.index) ? '' : ' incomplete') + '</b></div>');
+    areas.forEach(function (a) {
+      rows.push('<div class="tiprow"><span><i style="--c:' + areaColour(a) + '"></i>' + esc(a) + '</span><b>' + fmtScore(e.areas ? e.areas[a] : null) + '</b></div>');
+    });
+    if (e.latency_ms && isNum(e.latency_ms.median)) {
+      rows.push('<div class="tiprow"><span>Latency, median</span><b>' + fmtMs(e.latency_ms.median) + ' ms</b></div>');
+    }
+    var who = [e.org, e.system === 'two' ? 'System Two, reference' : e.system === 'baseline' ? 'floor' : (e.kind === 'open' ? 'open weights' : e.kind === 'api' ? 'API' : '')]
+      .filter(Boolean).join(', ');
+    return '<strong>' + esc(e.name) + '</strong>' + (who ? '<div class="tipnote">' + esc(who) + '</div>' : '') + rows.join('') +
+      (extra ? '<div class="tipnote">' + esc(extra) + '</div>' : '');
+  }
+  function showTip(el) {
+    var e = entryById(el.getAttribute('data-tip-id'));
+    var tip = $('#tip');
+    if (!e || !tip) return;
+    tip.innerHTML = tipHtml(e, el.getAttribute('data-tip-extra'));
+    tip.hidden = false;
+    var r = el.getBoundingClientRect(), tw = tip.offsetWidth, th = tip.offsetHeight;
+    var left = Math.min(Math.max(8, r.left + r.width / 2 - tw / 2), window.innerWidth - tw - 8);
+    var topPos = r.top - th - 10;
+    if (topPos < 8) topPos = Math.min(r.bottom + 10, window.innerHeight - th - 8);
+    tip.style.left = left + 'px';
+    tip.style.top = topPos + 'px';
+  }
+  function hideTip() { var tip = $('#tip'); if (tip) tip.hidden = true; }
+  function bindTips() {
+    var over = function (ev) {
+      var el = ev.target.closest ? ev.target.closest('[data-tip-id]') : null;
+      if (el) showTip(el);
+    };
+    var out = function (ev) {
+      var el = ev.target.closest ? ev.target.closest('[data-tip-id]') : null;
+      if (el && !(ev.relatedTarget && el.contains(ev.relatedTarget))) hideTip();
+    };
+    document.addEventListener('mouseover', over);
+    document.addEventListener('mouseout', out);
+    document.addEventListener('focusin', over);
+    document.addEventListener('focusout', out);
+    document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape') hideTip(); });
+    window.addEventListener('scroll', hideTip, { passive: true });
+  }
+
+  /* ---------- full table ---------- */
 
   function sortValue(e, key) {
     if (key === 'index') return e.index;
@@ -275,23 +472,18 @@
       return '<span class="na">—</span>' + (opts.incomplete ? '<span class="small">incomplete</span>' : '');
     }
     return '<span class="score"><span class="n">' + v.toFixed(1) + '</span>' +
-      '<span class="bar" aria-hidden="true"><i style="width:' + clamp(v) + '%"></i></span></span>';
+      '<span class="bar" aria-hidden="true"><i style="width:' + clamp(v) + '%' + (opts.c ? ';--c:' + opts.c : '') + '"></i></span></span>';
   }
-  function miniScore(v) {
+  function miniScore(v, c) {
     if (!isNum(v)) return '<span class="v na">—</span><span class="bar" aria-hidden="true"></span>';
-    return '<span class="v">' + v.toFixed(1) + '</span><span class="bar" aria-hidden="true"><i style="width:' + clamp(v) + '%"></i></span>';
-  }
-  function kindTag(kind) {
-    if (kind === 'open') return '<span class="tag tag-open">Open weights</span>';
-    if (kind === 'api') return '<span class="tag">API</span>';
-    return kind ? '<span class="tag">' + esc(kind) + '</span>' : '';
+    return '<span class="v">' + v.toFixed(1) + '</span><span class="bar" aria-hidden="true"><i style="width:' + clamp(v) + '%' + (c ? ';--c:' + c : '') + '"></i></span>';
   }
 
   function detailHtml(e) {
     var tests = state.board.tests || [];
     var testRows = tests.map(function (t) {
-      var v = e.tests ? e.tests[t.name] : null;
-      return '<li><span class="k">' + esc(t.title || t.name) + '</span>' + miniScore(v) + '</li>';
+      var v = e.tests ? e.tests[t.name] : null, c = areaColour(t.area);
+      return '<li><span class="k"><i style="--c:' + c + '" aria-hidden="true"></i>' + esc(t.title || t.name) + '</span>' + miniScore(v, c) + '</li>';
     }).join('');
     var types = Object.keys(e.types || {}).sort(function (a, b) {
       var ia = TYPE_ORDER.indexOf(a), ib = TYPE_ORDER.indexOf(b);
@@ -308,14 +500,15 @@
     var latency = isNum(l.median) || isNum(l.mean) || isNum(l.p80)
       ? fmtMs(l.median) + ' / ' + fmtMs(l.mean) + ' / ' + fmtMs(l.p80) + ' ms'
       : '—';
-    var nulls = isNum(n.precision) || isNum(n.recall)
-      ? fmtPct(n.precision) + ' / ' + fmtPct(n.recall)
-      : '—';
+    var nulls = isNum(n.precision) || isNum(n.recall) ? fmtPct(n.precision) + ' / ' + fmtPct(n.recall) : '—';
     var r = e.rows || {};
-    var rowsText = isNum(r.total)
-      ? r.total.toLocaleString('en-US') + ' requests: ' + (r.ok || 0).toLocaleString('en-US') + ' ok, ' +
-        (r.unsupported || 0).toLocaleString('en-US') + ' unsupported'
-      : '—';
+    var rowsText = '—';
+    if (isNum(r.total)) {
+      var bits = [fmtInt(r.ok || 0) + ' ok', fmtInt(r.unsupported || 0) + ' unsupported'];
+      if (r.error) bits.push(fmtInt(r.error) + ' error');
+      if (r.missing) bits.push(fmtInt(r.missing) + ' missing');
+      rowsText = fmtInt(r.total) + ' requests: ' + bits.join(', ');
+    }
     return '<div class="dcol"><h4>Tests</h4><ul class="scores">' + testRows + '</ul></div>' +
       '<div class="dcol"><h4>Field types</h4><ul class="scores">' + typeRows + '</ul></div>' +
       '<div class="dcol dfacts"><h4>Run</h4><dl>' +
@@ -330,25 +523,24 @@
   }
 
   function rowHtml(e, areas) {
-    var ref = e.system === 'two';
+    var two = e.system === 'two', base = e.system === 'baseline';
     var open = !!state.open[e._id];
-    var rankCell = ref
-      ? '<span class="na" title="Reference row, not ranked">—</span>'
+    var rankCell = two ? '<span class="na" title="Reference row, not ranked">ref</span>'
+      : base ? '<span class="na" title="The null floor, not ranked">floor</span>'
       : (e._rank ? String(e._rank) : '<span class="na" title="Incomplete run, not ranked">—</span>');
     var cols = 4 + areas.length;
-    return '<tr class="row' + (ref ? ' ref' : '') + (open ? ' open' : '') + '" data-id="' + e._id + '">' +
+    return '<tr class="row' + (two ? ' two' : '') + (base ? ' base' : '') + (open ? ' open' : '') + '" data-id="' + e._id + '">' +
       '<td class="c-rank">' + rankCell + '</td>' +
-      '<td class="c-model">' +
+      '<td class="c-model"><div class="who">' + avatarHtml(e) + '<div>' +
         '<button type="button" class="expand" aria-expanded="' + open + '" aria-controls="' + e._id + '-detail">' +
-          '<svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5L10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+          '<svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5L10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
           '<span class="name">' + esc(e.name || 'Unnamed') + '</span>' +
         '</button>' +
-        '<span class="org">' + (e.org ? '<span>' + esc(e.org) + '</span>' : '') + kindTag(e.kind) +
-          (ref ? '<span class="tag tag-ref">System Two, reference</span>' : '') + '</span>' +
-      '</td>' +
-      '<td class="c-score c-index">' + scoreCell(e.index, { incomplete: !ref && !isNum(e.index) }) + '</td>' +
-      areas.map(function (a) { return '<td class="c-score">' + scoreCell(e.areas ? e.areas[a] : null) + '</td>'; }).join('') +
-      '<td class="c-lat">' + fmtMs(e.latency_ms ? e.latency_ms.median : null) + '</td>' +
+        '<span class="org">' + (e.org ? '<span>' + esc(e.org) + '</span>' : '') + kindPill(e) + '</span>' +
+      '</div></div></td>' +
+      '<td class="c-score c-index">' + scoreCell(e.index, { incomplete: !two && !base && !isNum(e.index) }) + '</td>' +
+      areas.map(function (a) { return '<td class="c-score">' + scoreCell(e.areas ? e.areas[a] : null, { c: areaColour(a) }) + '</td>'; }).join('') +
+      '<td class="c-lat">' + (base ? '<span class="na">—</span>' : fmtMs(e.latency_ms ? e.latency_ms.median : null)) + '</td>' +
       '</tr>' +
       '<tr class="detail" id="' + e._id + '-detail"' + (open ? '' : ' hidden') + '><td colspan="' + cols + '"><div class="detail-inner">' + detailHtml(e) + '</div></td></tr>';
   }
@@ -357,44 +549,46 @@
     return '<svg class="dir" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   }
 
-  function renderBoard() {
-    var board = state.board, host = $('#board');
-    var areas = board.areas || [];
-    var groups = prepareEntries(board);
-    host.setAttribute('aria-busy', 'false');
+  function groupRow(cols, text) {
+    return '<tr class="group"><th scope="rowgroup" colspan="' + cols + '"><div class="group-inner">' + text + '</div></th></tr>';
+  }
 
-    if (!groups.all.length) {
-      host.innerHTML = '<div class="empty"><h3>No runs yet</h3>' +
-        '<p>Scored runs appear here once they are merged. The first ones are scheduled after the suite is frozen. ' +
-        'To add yours, see <a href="#submit">Submit a run</a>.</p></div>';
+  function renderTable() {
+    var board = state.board, host = $('#table'), g = state.groups;
+    var areas = board.areas || [];
+    if (!g.all.length) {
+      host.innerHTML = '<div class="empty"><p>No runs yet.</p></div>';
       return;
     }
-
     var headCells = [
       '<th scope="col" class="c-rank"><span aria-hidden="true">#</span><span class="sr-only">Rank</span></th>',
       '<th scope="col" class="c-model">Model</th>'
     ];
     var sortable = [{ key: 'index', label: 'Index', cls: 'c-score c-index' }]
-      .concat(areas.map(function (a) { return { key: 'area:' + a, label: a, cls: 'c-score' }; }))
+      .concat(areas.map(function (a) { return { key: 'area:' + a, label: a, cls: 'c-score', c: areaColour(a) }; }))
       .concat([{ key: 'latency', label: 'Latency', unit: 'median ms', cls: 'c-lat' }]);
     sortable.forEach(function (c) {
       var sorted = state.sort.key === c.key;
       var aria = sorted ? (state.sort.dir === 'asc' ? 'ascending' : 'descending') : 'none';
       headCells.push('<th scope="col" class="' + c.cls + '" aria-sort="' + aria + '">' +
-        '<button type="button" class="sort" data-key="' + c.key + '">' + esc(c.label) + sortIcon() + '</button>' +
+        '<button type="button" class="sort" data-key="' + esc(c.key) + '">' +
+        (c.c ? '<i class="adot" style="--c:' + c.c + '" aria-hidden="true"></i>' : '') + esc(c.label) + sortIcon() + '</button>' +
         (c.unit ? '<span class="unit">' + c.unit + '</span>' : '') + '</th>');
     });
-
     var cols = 4 + areas.length;
     var html = '<div class="scroller"><table class="board">' +
-      '<caption class="sr-only">System One extraction models ranked by Index, with System Two reference rows below</caption>' +
+      '<caption class="sr-only">System One extraction models ranked by Index, then the null floor and System Two reference rows</caption>' +
       '<thead><tr>' + headCells.join('') + '</tr></thead>';
-    if (groups.one.length) {
-      html += '<tbody>' + sortRows(groups.one).map(function (e) { return rowHtml(e, areas); }).join('') + '</tbody>';
+    if (g.one.length) {
+      html += '<tbody>' + sortRows(g.one).map(function (e) { return rowHtml(e, areas); }).join('') + '</tbody>';
     }
-    if (groups.two.length) {
-      html += '<tbody><tr class="group"><th scope="rowgroup" colspan="' + cols + '"><div class="group-inner">System Two reference: generating models prompted for JSON, shown for comparison, not ranked</div></th></tr>' +
-        sortRows(groups.two).map(function (e) { return rowHtml(e, areas); }).join('') + '</tbody>';
+    if (g.base.length) {
+      html += '<tbody>' + groupRow(cols, 'Floor: answers null for every field. Each test scores its share of null gold fields') +
+        g.base.map(function (e) { return rowHtml(e, areas); }).join('') + '</tbody>';
+    }
+    if (g.two.length) {
+      html += '<tbody>' + groupRow(cols, 'System Two reference: generating models prompted for JSON, shown for comparison, not ranked') +
+        sortRows(g.two).map(function (e) { return rowHtml(e, areas); }).join('') + '</tbody>';
     }
     html += '</table></div>';
     host.innerHTML = html;
@@ -402,12 +596,12 @@
   }
 
   function syncScrollerWidth() {
-    var sc = $('#board .scroller');
+    var sc = $('#table .scroller');
     if (sc) sc.style.setProperty('--vw', sc.clientWidth + 'px');
   }
 
   function toggleRow(id, force) {
-    var row = $('#board tr.row[data-id="' + id + '"]');
+    var row = $('#table tr.row[data-id="' + id + '"]');
     var det = document.getElementById(id + '-detail');
     if (!row || !det) return;
     var open = typeof force === 'boolean' ? force : !state.open[id];
@@ -422,9 +616,17 @@
     }
   }
 
+  function jumpToRow(id) {
+    toggleRow(id, true);
+    var row = $('#table tr.row[data-id="' + id + '"]');
+    if (!row) return;
+    row.scrollIntoView({ block: 'center' });
+    var btn = row.querySelector('.expand');
+    if (btn) btn.focus({ preventScroll: true });
+  }
+
   function bindBoardEvents() {
-    var host = $('#board');
-    host.addEventListener('click', function (ev) {
+    $('#table').addEventListener('click', function (ev) {
       var sortBtn = ev.target.closest('.sort');
       if (sortBtn) {
         var key = sortBtn.getAttribute('data-key');
@@ -433,8 +635,8 @@
         } else {
           state.sort = { key: key, dir: key === 'latency' ? 'asc' : 'desc' };
         }
-        renderBoard();
-        var again = $('#board .sort[data-key="' + key + '"]');
+        renderTable();
+        var again = $('#table .sort[data-key="' + key + '"]');
         if (again) again.focus();
         return;
       }
@@ -446,12 +648,34 @@
         toggleRow(row.getAttribute('data-id'));
       }
     });
+    $('#ranking').addEventListener('click', function (ev) {
+      var bar = ev.target.closest('.rk-bar');
+      if (bar) { hideTip(); jumpToRow(bar.getAttribute('data-id')); }
+    });
+    $('[data-switch]').addEventListener('click', function (ev) {
+      var btn = ev.target.closest('button[data-metric]');
+      if (!btn) return;
+      state.metric = btn.getAttribute('data-metric');
+      renderSwitch();
+      renderLegend();
+      renderRanking();
+      var again = $('[data-switch] button[data-metric="' + state.metric + '"]');
+      if (again) again.focus();
+    });
+    var newsBtn = $('#news-toggle'), news = $('#news');
+    if (newsBtn && news) {
+      newsBtn.addEventListener('click', function () {
+        var open = news.hidden;
+        news.hidden = !open;
+        newsBtn.setAttribute('aria-expanded', String(open));
+      });
+    }
   }
 
   function openFromHash() {
     var h = location.hash.replace(/^#/, '');
     if (!h || h.indexOf('entry-') !== 0) return;
-    var row = $('#board tr.row[data-id="' + h + '"]');
+    var row = $('#table tr.row[data-id="' + h + '"]');
     if (!row) return;
     toggleRow(h, true);
     row.scrollIntoView({ block: 'start' });
@@ -462,7 +686,7 @@
   function testCard(t) {
     var src = safeUrl(t.source_url);
     var types = (t.types || []).map(function (x) { return '<code>' + esc(x) + '</code>'; }).join(' ');
-    return '<article class="card test" id="test-' + esc(t.name) + '">' +
+    return '<article class="card test" id="test-' + esc(t.name) + '" style="--c:' + areaColour(t.area) + '">' +
       '<header><h4>' + esc(t.title || t.name) + '</h4><code class="tid">' + esc(t.name) + '</code></header>' +
       '<p>' + esc(t.description || '') + '</p>' +
       '<dl class="facts-grid">' +
@@ -484,72 +708,84 @@
     var html = areas.map(function (a) {
       var ts = tests.filter(function (t) { return t.area === a; });
       if (!ts.length) return '';
-      return '<div class="area"><h3>' + esc(a) + ' <span class="count">' + plural(ts.length, 'test') + '</span></h3>' +
+      return '<div class="area" style="--c:' + areaColour(a) + '"><h3><i aria-hidden="true"></i>' + esc(a) + ' <span class="count">' + plural(ts.length, 'test') + '</span></h3>' +
         '<div class="tests-grid">' + ts.map(testCard).join('') + '</div></div>';
     }).join('');
     host.innerHTML = html || '<div class="card empty"><p>No tests listed in the board file.</p></div>';
+  }
 
+  /* ---------- page text ---------- */
+
+  function renderMeta() {
+    var board = state.board, g = state.groups, tests = board.tests || [];
+    if (board.edition) setText('[data-edition]', board.edition);
+    setText('[data-test-count]', String(tests.length || 7));
+    var gen = fmtDate(board.generated_utc);
+    setText('[data-generated]', gen);
     var requests = tests.reduce(function (s, t) { return s + (isNum(t.requests) ? t.requests : 0); }, 0);
     var fieldsKnown = tests.length && tests.every(function (t) { return isNum(t.fields); });
     var fields = tests.reduce(function (s, t) { return s + (isNum(t.fields) ? t.fields : 0); }, 0);
-    var meta = plural(tests.length, 'test') + ' in ' + plural(areas.length, 'area') + ', ' + fmtInt(requests) + ' requests' +
-      (fieldsKnown ? ', ' + fmtInt(fields) + ' fields' : '');
-    setText('[data-tests-meta]', meta + '. Public sources, pinned revisions, fixed seed.');
-    setText('[data-facts]', 'Edition ' + (board.edition || '') + ': ' + meta + '.');
-  }
-
-  /* ---------- page ---------- */
-
-  function renderMeta() {
-    var board = state.board;
-    if (board.edition) setText('[data-edition]', board.edition);
-    setText('[data-test-count]', String((board.tests || []).length || 7));
-    var gen = fmtDate(board.generated_utc);
-    setText('[data-generated]', gen);
-    var g = prepareEntries(board);
-    var ranked = g.one.filter(function (e) { return isNum(e.index); }).length;
+    setText('[data-request-count]', fmtInt(requests));
+    var areas = (board.areas || []).length;
+    setText('[data-tests-meta]', plural(tests.length, 'test') + ' in ' + plural(areas, 'area') + ', ' + fmtInt(requests) + ' requests' +
+      (fieldsKnown ? ', ' + fmtInt(fields) + ' fields' : '') + '. Public sources, pinned revisions, fixed seed.');
+    var ranked = g.ranked.length;
+    var meta = ['edition ' + (board.edition || '?'), plural(tests.length, 'test'), fmtInt(requests) + ' requests',
+      ranked + (ranked === 1 ? ' ranked entry' : ' ranked entries')];
+    if (g.two.length) meta.push(plural(g.two.length, 'reference row'));
+    meta.push('updated ' + gen);
+    setText('[data-meta]', meta.join(' · '));
     var bits = [];
     if (ranked) bits.push(ranked + (ranked === 1 ? ' ranked entry' : ' ranked entries'));
+    if (g.one.length - ranked) bits.push(plural(g.one.length - ranked, 'incomplete run'));
+    if (g.base.length) bits.push('the null floor');
     if (g.two.length) bits.push(plural(g.two.length, 'reference row'));
-    var lead = bits.length ? bits.join(', ') + ', generated ' : 'Generated ';
-    lead = lead.replace(/^./, function (c) { return c.toUpperCase(); });
-    $all('[data-board-meta]').forEach(function (el) {
-      el.innerHTML = esc(lead) + '<span class="nowrap">' + esc(gen) + '</span>';
-    });
+    setText('[data-board-meta]', (bits.join(', ') || 'no rows') + ' · generated ' + gen);
   }
 
   function showError(msg) {
-    var host = $('#board');
+    var host = $('#ranking');
     host.setAttribute('aria-busy', 'false');
-    host.innerHTML = '<div class="error"><h3>Could not load the board</h3><p class="muted">' + esc(msg) + ' The file <code>data/board.json</code> is generated by <code>python -m extract_index board</code>.</p></div>';
+    host.innerHTML = '<div class="error"><h3>Could not load the board</h3><p>' + esc(msg) + ' The file <code>data/board.json</code> is generated by <code>python -m extract_index board</code>.</p></div>';
+  }
+
+  function renderAll() {
+    renderMeta();
+    renderLegend();
+    renderSwitch();
+    renderRanking();
+    renderAreas();
+    renderTypes();
+    renderLatency();
+    renderTable();
+    renderTests();
   }
 
   function init() {
     renderJsonExamples();
     bindBoardEvents();
-    renderDiagram(true);
+    bindTips();
 
     fetch(BOARD_URL, { cache: 'no-store' })
       .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status + ' for ' + BOARD_URL + '.'); return r.json(); })
       .then(function (board) {
         if (!board || typeof board !== 'object') throw new Error('The board file is not a JSON object.');
         state.board = board;
-        renderMeta();
-        renderBoard();
-        renderTests();
-        renderDiagram(true);
+        state.groups = prepareEntries(board);
+        renderAll();
         openFromHash();
       })
       .catch(function (err) { showError(err && err.message ? err.message : String(err)); });
 
-    var t;
+    var t, lastW = window.innerWidth;
     window.addEventListener('resize', function () {
       clearTimeout(t);
-      t = setTimeout(function () { renderDiagram(false); syncScrollerWidth(); }, 120);
+      t = setTimeout(function () {
+        if (!state.groups) return;
+        if (window.innerWidth !== lastW) { lastW = window.innerWidth; renderRanking(); renderTypes(); renderLatency(); }
+        syncScrollerWidth();
+      }, 120);
     });
-    if (document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(function () { renderDiagram(true); });
-    }
     window.addEventListener('hashchange', openFromHash);
   }
 
