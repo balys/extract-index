@@ -16,6 +16,22 @@
   "avatar": "assets/orgs/cloudflare.webp"
  },
  {
+  "name": "Turion Extract alpha",
+  "org": "Turion AI",
+  "kind": "open",
+  "system": "one",
+  "scores": "https://huggingface.co/datasets/turion-ai/turion-extract-alpha-index-results/resolve/main/scores.json",
+  "hardware": "1x NVIDIA RTX PRO 6000 Blackwell Workstation Edition",
+  "links": {
+   "model": "https://huggingface.co/turion-ai/turion-extract-alpha",
+   "results": "https://huggingface.co/datasets/turion-ai/turion-extract-alpha-index-results",
+   "submission": "https://github.com/balys/extract-index/pull/1"
+  },
+  "date": "2026-10-24",
+  "notes": "Gemma 4 12B with a LoRA adapter and extraction heads: one forward pass, no generated tokens. Trained on the training splits of SQuAD 2.0, CUAD, CORD, DROP, TAT-QA and Few-NERD (the index scores their validation and test splits) and on synthetic documents from Turion AI's own generator, written without the index's docs generator, so docs is the only test outside its training domains. Run by Turion AI, one request at a time in BF16; latency is the local forward pass, with no network.",
+  "avatar": "assets/orgs/turion-ai.webp"
+ },
+ {
   "name": "Null baseline",
   "org": "Extract Index",
   "kind": "open",

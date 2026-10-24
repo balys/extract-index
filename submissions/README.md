@@ -7,6 +7,7 @@ typed in by hand.
 | Model | Weights or API | Results | Engine and commit | Hardware | Options | Declared limits |
 |---|---|---|---|---|---|---|
 | Clairic (preview), Cloudflare | API, `@cf/cloudflare/clairic` | [balys/extract-index-run-clairic-preview](https://huggingface.co/datasets/balys/extract-index-run-clairic-preview) | `clairic` at `151f52a` | Cloudflare Workers AI (REST API, called from Europe) | none (defaults) | 65,536-token context, 8,192-token passes |
+| Turion Extract alpha, Turion AI | Open weights, [turion-ai/turion-extract-alpha](https://huggingface.co/turion-ai/turion-extract-alpha) (LoRA + heads on Gemma 4 12B) | [turion-ai/turion-extract-alpha-index-results](https://huggingface.co/datasets/turion-ai/turion-extract-alpha-index-results) | `turion_extract.engine:TurionExtract` (the model repo's `code/`) at `3759417` | 1x NVIDIA RTX PRO 6000 Blackwell Workstation Edition, BF16 | `model_dir=<local copy of the model repo>` | 16,384 tokens per request, 24 fields per pass |
 
 ## How to submit
 
